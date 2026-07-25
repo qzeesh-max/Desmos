@@ -14,6 +14,12 @@ extern "C" {
         jnl_tls_error.has_error = false;
         jnl_tls_error.message[0] = '\0';
     }
+
+    JNL_EXPORT void JNL_SetError(const char* msg) {
+        jnl_tls_error.has_error = true;
+        std::strncpy(jnl_tls_error.message, msg, sizeof(jnl_tls_error.message) - 1);
+        jnl_tls_error.message[sizeof(jnl_tls_error.message) - 1] = '\0';
+    }
 }
 
 namespace JNL {

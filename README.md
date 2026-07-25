@@ -9,17 +9,17 @@ JavaNativeLink automatically analyzes your C++ classes and generates the require
 - **Constructors & Destructors**: Automatically exposes multiple overloaded constructors and a safe destructor wrapper.
 - **Methods**: Exposes const and non-const methods.
 - **Public Fields**: Automatically generates getter and setter methods for public fields.
-- **Exceptions**: Safely marshals C++ exceptions (derived from `std::exception` and unknown exceptions) to Java `RuntimeException`s using thread-local error state.
+- **Exceptions**: Safely marshals C++ exceptions (derived from `std::exception` and unknown exceptions) to Java `RuntimeException`s using thread-local error state. Propagates Java exceptions back to C++ automatically.
 - **Primitive Type Mapping**: Correctly maps C++ unsigned types to oversized signed types in Java (e.g. `uint32_t` to `long`), and maps primitive pointers/references (e.g. `int*`, `int&`) to Java arrays for safe mutation.
 - **Strings**: Maps `std::string` by value seamlessly to Java `String`.
-- **Bidirectional Callbacks**: Maps `std::function` to Java FFM `UpcallStub`s, allowing you to pass Java Lambdas directly to C++.
-- **Virtual Methods & Directors**: Use `std::function` fields as an idiomatic replacement for virtual methods, effectively acting as "Directors" that redirect calls to Java lambdas.
+- **Virtual Methods & Overrides (Trampolines)**: Generate C++ Trampolines to allow Java code to subclass C++ classes and override virtual methods.
+- **Object Lifecycle Registry**: Java bindings ensure that C++ objects bound to Java instances are protected from Garbage Collection while they are actively used by C++.
 
 ## Requirements
 
 - **C++ Compiler**: GCC 16 with `-std=c++26 -freflection` (Note: MSVC currently lacks full C++26 reflection support for generating Java bindings, but can compile the core library).
 - **Java**: JDK 22 or newer (for FFM API)
-- **CMake**: 3.10+
+- **Bash environment** for running build scripts
 
 ## Building
 
@@ -45,16 +45,17 @@ Run the provided shell script from the repository root:
 ```
 Ensure that GCC 16 is installed and set as the default compiler (`g++-16` or `g++` depending on your environment), and that JDK 22 is correctly configured in your `JAVA_HOME`.
 
-## Usage
+---
 
-### 1. Annotate your C++ Class
+## 1. Exposing C++ Classes to Java
 
-Include `JavaNativeLink/Exporter.h` and use the `JNL_EXPORT_CLASS` macro at the bottom of your file to export the class.
+To expose a C++ class to Java, simply include `JavaNativeLink/Exporter.h` and use the `JNL_EXPORT_CLASS` macro.
+
+### Annotating the C++ Class (`Point.cpp`)
 
 ```cpp
 #include "JavaNativeLink/Exporter.h"
 #include <string>
-#include <functional>
 
 struct Point {
     int x;
@@ -66,25 +67,19 @@ struct Point {
     void print() {
         std::cout << name << ": " << x << ", " << y << "\n";
     }
-    
-    // Callback example (Virtual Method alternative)
-    int applyCallback(int a, std::function<int(int)> cb) {
-        if (cb) return cb(a);
-        return -1;
-    }
 };
 
 // Export the class to Java
 JNL_EXPORT_CLASS(Point);
 ```
 
-### 2. Generate Java Bindings
+### Generating the Java Bindings
 
-Write a simple C++ generator program that includes `JavaNativeLink/JavaGenerator.h` and calls `JNL::generate_java`. 
+Write a simple C++ generator program to extract the reflected metadata and create the `.java` files using `JNL::generate_java`.
 
 ```cpp
 // Generator.cpp
-#include "Point.cpp" // Or include the header if building separately
+#include "Point.cpp" 
 #include "JavaNativeLink/JavaGenerator.h"
 #include <fstream>
 
@@ -96,57 +91,155 @@ int main() {
 }
 ```
 
-Compile and run the generator with GCC 16:
-```bash
-g++-16 -std=c++26 -freflection Generator.cpp -o Generator -I<path_to_jnl_include> -L<path_to_jnl_lib> -lJavaNativeLink
-./Generator
-```
-This produces `Point.java`.
+### Using in Java
 
-### 3. Compile your Native Library
-
-Compile your C++ code into a shared object (`.dylib` on macOS, `.so` on Linux, `.dll` on Windows). Link against `libJavaNativeLink.dylib`.
-
-```bash
-g++-16 -std=c++26 -freflection -fPIC -shared Point.cpp -o libPoint.dylib -I<path_to_jnl_include> -L<path_to_jnl_lib> -lJavaNativeLink
-```
-
-### 4. Use in Java
-
-Compile the generated Java file and your application code. You must enable native access.
+Once compiled, you can directly use the `Point` class in Java. Remember to always close your FFM native classes to free their associated memory!
 
 ```java
 import java.lang.foreign.*;
-import java.lang.invoke.*;
 
 public class Main {
-    public static void main(String[] args) throws Throwable {
-        try (Arena arena = Arena.ofConfined()) {
-            Point p = new Point(10, 20, "MyPoint");
-            p.print();
-            
-            // Pass a Java Lambda as a C++ std::function callback
-            MethodHandle cbHandle = MethodHandles.lookup().findStatic(Main.class, "myCallback", MethodType.methodType(int.class, int.class));
-            MemorySegment stub = Linker.nativeLinker().upcallStub(cbHandle, FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT), arena);
-            
-            int result = p.applyCallback(5, stub);
-            System.out.println("Callback returned: " + result);
-            
-            p.close(); // Important: free the native C++ object
-        }
-    }
-    
-    public static int myCallback(int x) {
-        return x * 2; // Returns 10
+    public static void main(String[] args) {
+        Point p = new Point(10, 20, "MyPoint");
+        p.print();
+        
+        System.out.println("X is: " + p.get_x());
+        p.set_y(40);
+        
+        p.close(); // Free native memory
     }
 }
 ```
 
-Run with:
-```bash
-javac Main.java Point.java
-java --enable-native-access=ALL-UNNAMED -Djava.library.path=. Main
+---
+
+## 2. Java to C++: Overriding Virtual Methods (Trampolines)
+
+JNL allows Java to cleanly override C++ virtual methods using the "Trampoline" pattern. 
+
+### The C++ Interface (`VirtualBase.cpp`)
+
+```cpp
+#include "JavaNativeLink/Exporter.h"
+#include <iostream>
+
+struct VirtualBase {
+    virtual ~VirtualBase() = default;
+    
+    // Virtual method to be overridden in Java
+    virtual int compute(int val) {
+        return val * 10;
+    }
+
+    // Method that calls the virtual method internally
+    int callCompute(int val) {
+        return compute(val);
+    }
+};
+
+JNL_EXPORT_CLASS(VirtualBase);
 ```
+
+### Generating the Trampoline
+
+To generate the trampoline, invoke the generator twice (a multi-pass generator pipeline):
+1. **Pass 1:** Generate `VirtualBase` and `VirtualBase_Trampoline.cpp` (the C++ proxy).
+2. **Pass 2:** Generate the `VirtualBase_Trampoline.java` which links to the proxy.
+
+*Check `tests/java_e2e/Generator_step1.cpp` and `Generator_step2.cpp` for exact boilerplate of the generation pipeline.*
+
+### Overriding the Virtual Method in Java (`VirtualTest.java`)
+
+When the generator finishes, it produces `VirtualBase_Trampoline.java`. You subclass this in Java.
+
+```java
+import java.lang.foreign.Arena;
+
+// Subclass the generated Trampoline class
+public class MyJavaImplementation extends VirtualBase_Trampoline {
+    
+    public MyJavaImplementation(Arena arena) {
+        super(arena);
+        enableCallbacks(arena); // CRITICAL: This registers Java methods as C++ upcalls
+    }
+
+    // Override the mapped Java method
+    @Override
+    public int compute(int val) {
+        System.out.println("Java intercepting compute with: " + val);
+        return val * 20; // Custom Java logic
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        try (Arena arena = Arena.ofConfined()) {
+            MyJavaImplementation impl = new MyJavaImplementation(arena);
+            
+            // This calls the C++ callCompute(), which invokes compute(), 
+            // which routes back to our Java compute() override!
+            int result = impl.callCompute(5); 
+            System.out.println("Result: " + result); 
+        }
+    }
+}
+```
+
+### Object Retention (`__registry`)
+When a C++ program calls a Java virtual method, it requires the Java Object to still be alive. JavaNativeLink handles this automatically.
+- Upon calling `enableCallbacks(arena)`, the object registers itself in a static `ConcurrentHashMap` (`__registry`) mapped to its C++ pointer address.
+- This prevents the Java Garbage Collector from destroying the object while C++ holds its pointer.
+- When the C++ object goes out of scope and its destructor is invoked, it fires a `cb_destroy` upcall to Java, which safely removes the object from the `__registry`.
+
+---
+
+## 3. Exception Handling
+
+JNL automatically bridges exceptions across the C++ ↔ Java boundary.
+
+- **C++ to Java**: If a C++ method throws a `std::runtime_error`, JNL catches it natively and invokes `JNL_SetError()`. Upon returning to Java, the FFM wrapper automatically detects the thread-local error flag and rethrows it as a Java `RuntimeException`.
+- **Java to C++ (Trampolines)**: If a Java overridden virtual method throws a `RuntimeException`, the generated FFM Upcall Stub catches it, prints the stack trace, and invokes `JNL_SetError()`. When execution returns to the C++ Trampoline, it checks the error flag and immediately throws a `std::runtime_error` to seamlessly fail the C++ caller.
+
+---
+
+## 4. Examples Provided in the Framework
+
+Inside `tests/java_e2e/`, you will find three distinct E2E integration examples demonstrating JNL's robust capabilities:
+
+1. **`Point.cpp` & `Main.java` (Basic Interactions)**
+   - Demonstrates simple C++ struct mapping, instantiation, and explicit `.close()` handling.
+   - Showcases primitive references (`int*`) converting to Java arrays `int[]` for bidirectional mutation.
+   - Demonstrates basic C++ -> Java native exception propagation.
+
+2. **`PrimitiveTypesTest.cpp` & `PrimitiveTest.java` (Primitive Exhaustion)**
+   - Validates precision and accuracy for *all* C++ primitives mapping across FFM boundaries.
+   - Highlights that `uint32_t` correctly maps to `long` in Java to prevent sign-bit corruption.
+   - Proves that these primitives safely traverse both standard downcalls and virtual trampoline upcalls.
+
+3. **`VirtualBase.cpp` & `VirtualTest.java` (Virtual Overrides)**
+   - Demonstrates how to instantiate a Java-implemented C++ subclass (`VirtualBase_Trampoline`).
+   - Verifies the `enableCallbacks()` initialization and `__registry` behavior.
+   - Ensures that an exception intentionally thrown in Java (`MyJavaImplementation`) accurately causes C++ to throw `std::runtime_error`, which is finally caught at the outer Java scope.
+
+---
+
+## 5. Building and Running Tests Manually
+
+If you prefer to manually trigger the test suite instead of using `build.sh`:
+
+### Running the Unit Tests
+```bash
+./tests/run_tests.sh
+```
+This script manages the full end-to-end integration test pipeline:
+1. Compiles the local `libJavaNativeLink.dylib`.
+2. Compiles and executes `Generator_step1.cpp` to create intermediate C++ trampolines.
+3. Compiles and executes `Generator_step2.cpp` to create final Java bridging layers.
+4. Compiles the test native library `libPoint.dylib` containing `Point`, `VirtualBase`, and `PrimitiveTester`.
+5. Compiles all `.java` files using JDK 22+.
+6. Executes `Main.java` with `--enable-native-access=ALL-UNNAMED` to run the 3 core example test suites.
+
+---
 
 ## Quick Start (Project Template)
 
@@ -192,4 +285,3 @@ java --enable-native-access=ALL-UNNAMED -Djava.library.path=.:../../build CardGa
 - **TypeMapper (`Exporter.h`)**: A template trait that converts between Java FFM C-ABI types (`NativeType`) and native C++ types. Handles pointer indirection, unsigned-to-signed extensions, and `std::function` wrapping automatically.
 - **JavaGenerator (`JavaGenerator.h`)**: Uses C++26 reflection over `std::meta::members_of` to iterate over all exported constructors, methods, and public fields, and maps them to `MethodHandle` calls in the generated Java file.
 - **JNLClassRegistry**: A C-compatible struct that the `JNL_EXPORT_CLASS` macro uses to register method wrappers to a global registry, making them discoverable from Java at runtime without name-mangling complexities.
-

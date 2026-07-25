@@ -1,0 +1,48 @@
+# Compiled Java classes
+*.class
+
+# Compiled Dynamic Libraries
+*.dylib
+*.so
+*.dll
+
+# Compiled Executables
+Generator_step1
+Generator_step2
+Generator
+test_inject
+test_meta
+test_reflection
+
+# CMake and build directories
+build/
+lib/
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+
+# Logs and scratch
+*.log
+scratch/
+obj_sym.txt
+
+# Editor / IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Temporary scripts
+fix_jg.py
+patch_cpp_type.sh
+patch_cpp_type2.sh
+update_generator.sh
+build_test.sh
+TestFFM.java
+
+tests/java_e2e/Point.java
+tests/java_e2e/PrimitiveTester.java
+tests/java_e2e/PrimitiveTester_Trampoline.java
+tests/java_e2e/VirtualBase.java
+tests/java_e2e/VirtualBase_Trampoline.java
+tests/java_e2e/VirtualBase_Trampoline.cpp

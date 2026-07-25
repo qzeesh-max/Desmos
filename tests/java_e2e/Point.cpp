@@ -1,3 +1,4 @@
+#pragma once
 #include "JavaNativeLink/Exporter.h"
 #include <iostream>
 #include <functional>
@@ -37,3 +38,19 @@ struct Point {
 };
 
 JNL_EXPORT_CLASS(Point);
+
+struct VirtualBase {
+    int dummy = 0;
+    VirtualBase() { std::cout << "VirtualBase created\n"; }
+    virtual ~VirtualBase() { std::cout << "VirtualBase destroyed\n"; }
+    
+    virtual int compute(int a) {
+        return a * 10;
+    }
+    
+    int callCompute(int a) {
+        return compute(a);
+    }
+};
+
+JNL_EXPORT_CLASS(VirtualBase);

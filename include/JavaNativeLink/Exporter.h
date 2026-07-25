@@ -60,6 +60,7 @@ struct JNLClassRegistry {
 JNL_EXPORT const JNLClassRegistry* JNL_GetRegistry(const char* class_name);
 JNL_EXPORT void* JNL_GetLastError();
 JNL_EXPORT void JNL_ClearLastError();
+JNL_EXPORT void JNL_SetError(const char* msg);
 JNL_EXPORT void JNL_Free(void* ptr);
 
 } // extern "C"
@@ -249,8 +250,8 @@ consteval size_t count_methods(std::meta::info cls) {
 }
 
 template<size_t N>
-consteval std::array<std::meta::info, N> get_methods(std::meta::info cls) {
-    std::array<std::meta::info, N> arr{};
+consteval std::array<std::meta::info, N == 0 ? 1 : N> get_methods(std::meta::info cls) {
+    std::array<std::meta::info, N == 0 ? 1 : N> arr{};
     size_t i = 0;
     for (auto mem : std::meta::members_of(cls, std::meta::access_context::unchecked())) {
         if (is_exported_method(mem)) {
@@ -260,9 +261,9 @@ consteval std::array<std::meta::info, N> get_methods(std::meta::info cls) {
     return arr;
 }
 
-template<typename T, size_t N, std::array<std::meta::info, N> Methods, size_t I = 0>
+template<typename T, size_t N, std::array<std::meta::info, N == 0 ? 1 : N> Methods, size_t I = 0>
 void fill_methods(JNLMethod* out) {
-    if constexpr (I < N) {
+    if constexpr (N > 0 && I < N) {
         constexpr auto mem = Methods[I];
         constexpr auto ptr = &[: mem :];
         using Sig = std::remove_const_t<decltype(ptr)>;
@@ -397,8 +398,8 @@ consteval size_t count_fields() {
 }
 
 template<size_t N, std::meta::info ClassMeta>
-consteval std::array<std::meta::info, N> get_fields() {
-    std::array<std::meta::info, N> arr{};
+consteval std::array<std::meta::info, N == 0 ? 1 : N> get_fields() {
+    std::array<std::meta::info, N == 0 ? 1 : N> arr{};
     size_t i = 0;
     for (auto mem : std::meta::members_of(ClassMeta, std::meta::access_context::unchecked())) {
         if (std::meta::is_nonstatic_data_member(mem)) {

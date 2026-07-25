@@ -11,6 +11,45 @@
 
 namespace JNL {
 
+
+template<typename T>
+consteval std::string_view get_cpp_type_name() {
+    using Base = std::remove_cvref_t<T>;
+    if constexpr (std::is_same_v<Base, void>) return "void";
+    if constexpr (std::is_same_v<Base, int8_t>) return "int8_t";
+    if constexpr (std::is_same_v<Base, uint8_t>) return "uint8_t";
+    if constexpr (std::is_same_v<Base, int16_t>) return "int16_t";
+    if constexpr (std::is_same_v<Base, uint16_t>) return "uint16_t";
+    if constexpr (std::is_same_v<Base, int32_t>) return "int32_t";
+    if constexpr (std::is_same_v<Base, uint32_t>) return "uint32_t";
+    if constexpr (std::is_same_v<Base, int64_t>) return "int64_t";
+    if constexpr (std::is_same_v<Base, uint64_t>) return "uint64_t";
+    if constexpr (std::is_same_v<Base, short>) return "short";
+    if constexpr (std::is_same_v<Base, unsigned short>) return "unsigned short";
+    if constexpr (std::is_same_v<Base, unsigned char>) return "unsigned char";
+    if constexpr (std::is_same_v<Base, long long>) return "long long";
+    if constexpr (std::is_same_v<Base, unsigned long long>) return "unsigned long long";
+    if constexpr (std::is_same_v<Base, int>) return "int";
+    if constexpr (std::is_same_v<Base, float>) return "float";
+    if constexpr (std::is_same_v<Base, double>) return "double";
+    if constexpr (std::is_same_v<Base, char>) return "char";
+    if constexpr (std::is_same_v<Base, unsigned int>) return "unsigned int";
+    if constexpr (std::is_same_v<Base, long>) return "long";
+    if constexpr (std::is_same_v<Base, bool>) return "bool";
+    if constexpr (std::is_pointer_v<T>) return "void*";
+    if constexpr (std::is_same_v<Base, std::string>) return "std::string";
+    constexpr auto info = ^^std::remove_cvref_t<T>;
+    if constexpr (std::meta::has_identifier(info)) {
+        return std::meta::identifier_of(info);
+    } else if constexpr (std::meta::has_template_arguments(info)) {
+        constexpr auto tmpl = std::meta::template_of(info);
+        if constexpr (std::meta::has_identifier(tmpl)) {
+            return std::meta::identifier_of(tmpl);
+        }
+    }
+    return "auto";
+}
+
 struct JavaTypeMapping {
     std::string_view java_type;
     std::string_view ffm_type;
@@ -100,12 +139,16 @@ consteval JavaTypeMapping map_type() {
 struct JavaParamMeta {
     std::string name;
     JavaTypeMapping type_map;
+    std::string cpp_type;
 };
 
 struct JavaMethodMeta {
     std::string name;
     JavaTypeMapping return_type_map;
     std::vector<JavaParamMeta> params;
+    std::string cpp_type;
+    bool is_virtual;
+    bool is_const;
 };
 
 template<size_t M, std::array<std::meta::info, M> Params, size_t J = 0>
@@ -121,6 +164,7 @@ void fill_params(std::vector<JavaParamMeta>& out) {
             pm.name = id.data();
         }
         pm.type_map = map_type<typename [: ptype :]>();
+        pm.cpp_type = get_cpp_type_name<typename [: ptype :]>();
         out.push_back(pm);
         
         fill_params<M, Params, J + 1>(out);
@@ -137,6 +181,9 @@ void fill_java_methods(std::vector<JavaMethodMeta>& out) {
         
         constexpr auto rtype = std::meta::return_type_of(mem);
         jm.return_type_map = map_type<typename [: rtype :]>();
+        jm.cpp_type = get_cpp_type_name<typename [: rtype :]>();
+        jm.is_virtual = std::meta::is_virtual(mem);
+        jm.is_const = std::meta::is_const(std::meta::type_of(mem));
         
         constexpr auto get_param_count = [](std::meta::info m) consteval {
             return std::meta::parameters_of(m).size();
@@ -167,7 +214,7 @@ consteval std::array<JavaFieldMeta, N> generate_field_metas_impl(std::index_sequ
     };
 }
 
-template<size_t N, std::array<std::meta::info, N> Fields>
+template<size_t N, std::array<std::meta::info, (N > 0 ? N : 1)> Fields>
 consteval std::array<JavaFieldMeta, N> generate_field_metas() {
     if constexpr (N == 0) return std::array<JavaFieldMeta, 0>{};
     else return generate_field_metas_impl<N, Fields>(std::make_index_sequence<N>{});
@@ -258,6 +305,7 @@ void generate_java(std::ostream& out, const std::string& package_name = "", cons
     out << "    private static MethodHandle mh_dtor;\n";
     out << "    private static MethodHandle mh_getLastError;\n";
     out << "    private static MethodHandle mh_clearLastError;\n";
+    out << "    private static MethodHandle mh_setLastError;\n";
     out << "    private static MethodHandle mh_JNL_Free;\n";
     
     out << "\n    static {\n";
@@ -273,6 +321,10 @@ void generate_java(std::ostream& out, const std::string& package_name = "", cons
     out << "            mh_clearLastError = LINKER.downcallHandle(\n";
     out << "                LOOKUP.find(\"JNL_ClearLastError\").orElseThrow(),\n";
     out << "                FunctionDescriptor.ofVoid()\n";
+    out << "            );\n";
+    out << "            mh_setLastError = LINKER.downcallHandle(\n";
+    out << "                LOOKUP.find(\"JNL_SetError\").orElseThrow(),\n";
+    out << "                FunctionDescriptor.ofVoid(ValueLayout.ADDRESS)\n";
     out << "            );\n";
     
     out << "            final MethodHandle getRegistryMH = LINKER.downcallHandle(\n";
@@ -496,7 +548,13 @@ void generate_java(std::ostream& out, const std::string& package_name = "", cons
             } else if (!m.return_type_map.cast_from_ffm.empty()) {
                 if (m.return_type_map.cast_from_ffm.find("&") != std::string_view::npos) {
                     // Suffix mask e.g. " & 0xFFFFFFFFL"
-                    out << "                return (long)_res" << m.return_type_map.cast_from_ffm << ";\n";
+                    if (m.return_type_map.java_type == "int") {
+                        out << "                return (int)((long)_res" << m.return_type_map.cast_from_ffm << ");\n";
+                    } else if (m.return_type_map.java_type == "short") {
+                        out << "                return (short)((long)_res" << m.return_type_map.cast_from_ffm << ");\n";
+                    } else {
+                        out << "                return (long)_res" << m.return_type_map.cast_from_ffm << ";\n";
+                    }
                 } else if (m.return_type_map.cast_from_ffm == "(int)" && m.return_type_map.java_type == "int") {
                     out << "                return (int)_res;\n";
                 } else {
@@ -533,7 +591,13 @@ void generate_java(std::ostream& out, const std::string& package_name = "", cons
             out << "                return new " << fmap.object_class_name << "(_res, Arena.ofAuto());\n";
         } else if (!fmap.cast_from_ffm.empty()) {
             if (fmap.cast_from_ffm.find("&") != std::string_view::npos) {
-                out << "                return (long)_res" << fmap.cast_from_ffm << ";\n";
+                if (fmap.java_type == "int") {
+                    out << "                return (int)((long)_res" << fmap.cast_from_ffm << ");\n";
+                } else if (fmap.java_type == "short") {
+                    out << "                return (short)((long)_res" << fmap.cast_from_ffm << ");\n";
+                } else {
+                    out << "                return (long)_res" << fmap.cast_from_ffm << ";\n";
+                }
             } else if (fmap.cast_from_ffm == "(int)" && fmap.java_type == "int") {
                 out << "                return (int)_res;\n";
             } else {
@@ -580,8 +644,214 @@ void generate_java(std::ostream& out, const std::string& package_name = "", cons
     out << "            throw new RuntimeException(\"Destructor failed\", e);\n";
     out << "        }\n";
     out << "    }\n";
+
+        bool has_virtual = false;
+        for (const auto& m : m_metas) { if (m.is_virtual) has_virtual = true; }
+        if (has_virtual && class_name.find("_Trampoline") != std::string::npos) {
+            out << "    private static final java.util.concurrent.ConcurrentHashMap<Long, " << class_name << "> __registry = new java.util.concurrent.ConcurrentHashMap<>();\n";
+            out << "    private static void _upcall_destroy(MemorySegment ptr) {\n";
+            out << "        __registry.remove(ptr.address());\n";
+            out << "    }\n\n";
+    
+    for (const auto& m : m_metas) {
+        if (!m.is_virtual) continue;
+        out << "    private static " << (std::string(m.return_type_map.ffm_type) == "void" ? "void" : m.return_type_map.ffm_type) << " _upcall_" << m.name << "(MemorySegment ptr";
+        for (size_t i = 0; i < m.params.size(); i++) {
+            out << ", " << m.params[i].type_map.ffm_type << " a" << i;
+        }
+        out << ") {\n";
+        out << "        " << class_name << " obj = __registry.get(ptr.address());\n";
+        out << "        if (obj != null) {\n";
+        
+        std::string ret_ffm_type = std::string(m.return_type_map.ffm_type);
+        if (ret_ffm_type != "void") {
+            out << "            " << m.return_type_map.java_type << " _ret = ";
+        } else {
+            out << "            ";
+        }
+        
+        out << "obj." << m.name << "(";
+        for (size_t i = 0; i < m.params.size(); i++) {
+            if (i > 0) out << ", ";
+            auto& fmap = m.params[i].type_map;
+            if (fmap.is_object) {
+                out << "new " << fmap.object_class_name << "(a" << i << ", Arena.ofAuto())";
+            } else if (!fmap.cast_from_ffm.empty()) {
+                if (fmap.cast_from_ffm.find("&") != std::string_view::npos) {
+                    if (fmap.java_type == "int") {
+                        out << "(int)((long)a" << i << fmap.cast_from_ffm << ")";
+                    } else if (fmap.java_type == "short") {
+                        out << "(short)((long)a" << i << fmap.cast_from_ffm << ")";
+                    } else {
+                        out << "((long)a" << i << fmap.cast_from_ffm << ")";
+                    }
+                } else if (fmap.cast_from_ffm == "(int)" && fmap.java_type == "int") {
+                    out << "(int)a" << i;
+                } else {
+                    out << fmap.cast_from_ffm << "a" << i;
+                }
+            } else {
+                out << "a" << i;
+            }
+        }
+        out << ");\n";
+        
+        if (ret_ffm_type != "void") {
+            if (!m.return_type_map.cast_to_ffm.empty()) {
+                out << "            return " << m.return_type_map.cast_to_ffm << "_ret;\n";
+            } else if (m.return_type_map.is_object) {
+                out << "            return _ret.getPointer();\n";
+            } else {
+                out << "            return _ret;\n";
+            }
+        }
+        out << "        }\n";
+        
+        if (ret_ffm_type != "void") {
+            std::string def_val = "0";
+            if (ret_ffm_type == "boolean") def_val = "false";
+            else if (ret_ffm_type == "MemorySegment") def_val = "MemorySegment.NULL";
+            else if (ret_ffm_type == "float") def_val = "0.0f";
+            else if (ret_ffm_type == "double") def_val = "0.0";
+            else if (ret_ffm_type == "long") def_val = "0L";
+            else if (ret_ffm_type == "byte") def_val = "(byte)0";
+            else if (ret_ffm_type == "short") def_val = "(short)0";
+            out << "        return " << def_val << ";\n";
+        }
+        out << "    }\n\n";
+    }
+
+    out << "    public void enableCallbacks(Arena arena) {\n";
+    out << "        __registry.put(this.getPointer().address(), this);\n";
+    out << "        try {\n";
+    out << "            MethodHandles.Lookup lookup = MethodHandles.lookup();\n";
+    out << "            MethodHandle mh_destroy = lookup.findStatic(this.getClass(), \"_upcall_destroy\", MethodType.methodType(void.class, MemorySegment.class));\n";
+    out << "            this.set_cb_destroy(Linker.nativeLinker().upcallStub(mh_destroy, FunctionDescriptor.ofVoid(ValueLayout.ADDRESS), arena));\n";
+
+    for (const auto& m : m_metas) {
+        if (!m.is_virtual) continue;
+        out << "            if (this.getClass().getMethod(\"" << m.name << "\"";
+        for (const auto& a : m.params) {
+            out << ", " << a.type_map.java_type << ".class";
+        }
+        out << ").getDeclaringClass() != " << class_name << ".class) {\n";
+        
+        out << "                MethodHandle mh = lookup.findStatic(this.getClass(), \"_upcall_" << m.name << "\", MethodType.methodType(" << (std::string(m.return_type_map.ffm_type) == "void" ? "void" : m.return_type_map.ffm_type) << ".class, MemorySegment.class";
+        for (const auto& a : m.params) {
+            out << ", " << (std::string(a.type_map.ffm_type) == "void" ? "void" : a.type_map.ffm_type) << ".class";
+        }
+        out << "));\n";
+        
+        if (std::string(m.return_type_map.ffm_type) == "void") {
+            out << "                this.set_cb_" << m.name << "(Linker.nativeLinker().upcallStub(mh, FunctionDescriptor.ofVoid(ValueLayout.ADDRESS";
+        } else {
+            out << "                this.set_cb_" << m.name << "(Linker.nativeLinker().upcallStub(mh, FunctionDescriptor.of(" << m.return_type_map.value_layout << ", ValueLayout.ADDRESS";
+        }
+        for (const auto& a : m.params) {
+            out << ", " << a.type_map.value_layout;
+        }
+        out << "), arena));\n";
+        out << "            }\n";
+    }
+
+    out << "        } catch (Exception e) {\n";
+    out << "            throw new RuntimeException(e);\n";
+    out << "        }\n";
+    out << "    }\n\n";
+        }
+        
+    out << "    public static void setCppError(String msg) {\n";
+    out << "        try (Arena a = Arena.ofConfined()) {\n";
+    out << "            MemorySegment cStr = a.allocateFrom(msg);\n";
+    out << "            mh_setLastError.invokeExact(cStr);\n";
+    out << "        } catch (Throwable e) {\n";
+    out << "            throw new RuntimeException(e);\n";
+    out << "        }\n";
+    out << "    }\n\n";
+
     
     out << "}\n";
 }
 
 } // namespace JNL
+
+namespace JNL {
+
+template<typename T>
+void generate_cpp_trampoline(std::ostream& out, const std::string& class_name) {
+    constexpr auto cls = ^^T;
+    constexpr size_t NM = JNL::count_methods(cls);
+    constexpr auto methods = JNL::get_methods<NM>(cls);
+    
+    std::vector<JNL::JavaMethodMeta> m_metas;
+    JNL::fill_java_methods<NM, methods>(m_metas);
+    
+    out << "#include <functional>\n";
+    out << "#include <stdexcept>\n";
+    out << "#include \"JavaNativeLink/Exporter.h\"\n\n";
+    out << "class " << class_name << "_Trampoline : public " << class_name << " {\n";
+    out << "public:\n";
+    out << "    void* cb_destroy = nullptr;\n";
+    out << "    ~" << class_name << "_Trampoline() override { if (cb_destroy) { using CbType = void(*)(void*); reinterpret_cast<CbType>(cb_destroy)(this); } }\n";
+    for (const auto& m : m_metas) {
+        if (m.is_virtual) {
+            out << "    void* cb_" << m.name << " = nullptr;\n";
+        }
+    }
+    out << "\n    // Inherit constructors\n";
+    out << "    using " << class_name << "::" << class_name << ";\n\n";
+    for (const auto& m : m_metas) {
+        if (m.is_virtual) {
+            out << "    " << m.cpp_type << " " << m.name << "(";
+            for (size_t i = 0; i < m.params.size(); ++i) {
+                out << m.params[i].cpp_type << " a" << i;
+                if (i < m.params.size() - 1) out << ", ";
+            }
+            out << ") " << (m.is_const ? "const " : "") << "override {\n";
+            out << "        if (cb_" << m.name << ") {\n";
+            out << "            using CbType = " << m.cpp_type << "(*)(";
+            out << "void*";
+            for (size_t i = 0; i < m.params.size(); ++i) {
+                out << ", " << m.params[i].cpp_type;
+            }
+            out << ");\n";
+            out << "            auto func = reinterpret_cast<CbType>(cb_" << m.name << ");\n";
+            if (m.cpp_type == "void") {
+                out << "            func(this";
+            } else {
+                out << "            " << m.cpp_type << " _res = func(this";
+            }
+            for (size_t i = 0; i < m.params.size(); ++i) {
+                out << ", a" << i;
+            }
+            out << ");\n";
+            out << "            auto _err = reinterpret_cast<JNLThreadError*>(JNL_GetLastError());\n";
+            out << "            if (_err && _err->has_error) {\n";
+            out << "                std::string _msg = _err->message;\n";
+            out << "                JNL_ClearLastError();\n";
+            out << "                throw std::runtime_error(_msg);\n";
+            out << "            }\n";
+            if (m.cpp_type != "void") {
+                out << "            return _res;\n";
+            } else {
+                out << "            return;\n";
+            }
+            out << "        }\n";
+            if (m.cpp_type != "void") {
+                out << "        return " << class_name << "::" << m.name << "(";
+            } else {
+                out << "        " << class_name << "::" << m.name << "(";
+            }
+            for (size_t i = 0; i < m.params.size(); ++i) {
+                out << "a" << i;
+                if (i < m.params.size() - 1) out << ", ";
+            }
+            out << ");\n";
+            out << "    }\n";
+        }
+    }
+    out << "};\n\n";
+    out << "JNL_EXPORT_CLASS(" << class_name << "_Trampoline);\n";
+}
+
+} // namespace jnl

@@ -34,15 +34,17 @@ $CXX -std=c++26 -freflection Generator.cpp -o Generator -I"$JNL_INCLUDE" -L"$JNL
 # Step 2: Run the generator
 echo "[2/4] Generating CardGame.java..."
 export LD_LIBRARY_PATH="$JNL_LIB:$LD_LIBRARY_PATH"
+export DYLD_LIBRARY_PATH="$JNL_LIB:$DYLD_LIBRARY_PATH"
 ./Generator
 
 # Step 3: Compile the native library
-echo "[3/4] Compiling libCardGame.so..."
-$CXX -std=c++26 -freflection -fPIC -shared CardGame.cpp -o libCardGame.so -I"$JNL_INCLUDE" -L"$JNL_LIB" -lJavaNativeLink
+echo "[3/4] Compiling libCardGame..."
+# Use .dylib as macOS is used for tests, FFM will resolve it via System.loadLibrary or native lookup
+$CXX -std=c++26 -freflection -fPIC -shared CardGame.cpp -o libCardGame.dylib -I"$JNL_INCLUDE" -L"$JNL_LIB" -lJavaNativeLink
 
 # Step 4: Compile Java
 echo "[4/4] Compiling Java..."
-javac CardGame.java CardGameUI.java
+/opt/homebrew/opt/openjdk@26/bin/javac CardGame.java CardGameUI.java
 
 echo "=== Card Game built successfully! ==="
 echo ""

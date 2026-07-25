@@ -1,8 +1,8 @@
-#include <iostream>
 #include <meta>
+#include <iostream>
 
-consteval void generate_func() {
-    // try to see if code injection exists
+consteval void generate(std::meta::info cls) {
+    // try to inject a function
 }
 
 int main() {

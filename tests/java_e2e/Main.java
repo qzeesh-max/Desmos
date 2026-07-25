@@ -1,6 +1,8 @@
 public class Main {
     public static void main(String[] args) {
         System.out.println("Java: Starting advanced test...");
+        try { VirtualTest.runTest(); } catch(Throwable t) { t.printStackTrace(); }
+        try { PrimitiveTest.runTest(); } catch(Throwable t) { t.printStackTrace(); }
         try (Point p = new Point(100, 200, "TestPoint")) {
             p.print();
             
