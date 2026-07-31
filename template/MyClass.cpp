@@ -11,7 +11,7 @@
 // exported to Java via C++26 reflection.
 // =============================================================================
 
-struct [[jnl::java_export]] MyClass {
+struct [[=jnl::export_java{}]] MyClass {
     int value;
     std::string name;
 

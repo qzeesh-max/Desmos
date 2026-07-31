@@ -7,7 +7,7 @@
 #include "JavaNativeLink/Exporter.h"
 #include "JavaNativeLink/Annotations.h"
 
-class [[jnl::java_export]] Sorter {
+class [[=jnl::export_java{}]] Sorter {
 private:
     std::vector<int> m_array;
     std::atomic<int>* m_visualArray;

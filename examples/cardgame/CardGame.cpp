@@ -18,7 +18,7 @@
 // =============================================================================
 #include <JavaNativeLink/Annotations.h>
 
-struct [[jnl::java_export]] CardGame {
+struct [[=jnl::export_java{}]] CardGame {
     // Game state
     std::string status;      // "waiting", "playing", "player_bust", "dealer_bust", "player_win", "dealer_win", "push"
     int playerScore;

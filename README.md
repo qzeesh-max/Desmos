@@ -58,7 +58,7 @@ To expose a C++ class to Java, simply include `JavaNativeLink/Exporter.h` and us
 #include <JavaNativeLink/Annotations.h>
 #include <string>
 
-struct [[jnl::java_export]] Point {
+struct [[=jnl::export_java{}]] Point {
     int x;
     int y;
     std::string name;
@@ -110,7 +110,7 @@ JNL allows Java to cleanly override C++ virtual methods using the "Trampoline" p
 #include "JavaNativeLink/Exporter.h"
 #include <iostream>
 
-struct [[jnl::java_export]] VirtualBase {
+struct [[=jnl::export_java{}]] VirtualBase {
     virtual ~VirtualBase() = default;
     
     // Virtual method to be overridden in Java

@@ -40,7 +40,7 @@ def parse_cpp_file(file_path):
     
     # Let's use a simpler regex that matches both:
     pattern = re.compile(
-        r'(?:\[\[\s*jnl::[a-zA-Z0-9_{}()]*\s*\]\]\s*(?:\[\[.*?\]\]\s*)*)?' # Pre-attributes
+        r'(?:\[\[\s*=jnl::[a-zA-Z0-9_{}()]*\s*\]\]\s*(?:\[\[.*?\]\]\s*)*)?' # Pre-attributes
         r'\b(class|struct)\b\s+'                                          # class or struct
         r'((?:\[\[.*?\]\]\s*)*)?'                                         # Post-attributes
         r'([a-zA-Z_][a-zA-Z0-9_]*)',                                      # Class name
@@ -50,7 +50,7 @@ def parse_cpp_file(file_path):
     for match in pattern.finditer(content):
         full_match = match.group(0)
         class_name = match.group(3)
-        if 'jnl::' in full_match:
+        if '=jnl::' in full_match:
             classes.append(class_name)
             
     return classes
