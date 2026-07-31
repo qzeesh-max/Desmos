@@ -64,6 +64,7 @@ public class CardGame implements AutoCloseable {
     private static MethodHandle mh_dtor;
     private static MethodHandle mh_getLastError;
     private static MethodHandle mh_clearLastError;
+    private static MethodHandle mh_setLastError;
     private static MethodHandle mh_JNL_Free;
 
     static {
@@ -79,6 +80,10 @@ public class CardGame implements AutoCloseable {
             mh_clearLastError = LINKER.downcallHandle(
                 LOOKUP.find("JNL_ClearLastError").orElseThrow(),
                 FunctionDescriptor.ofVoid()
+            );
+            mh_setLastError = LINKER.downcallHandle(
+                LOOKUP.find("JNL_SetError").orElseThrow(),
+                FunctionDescriptor.ofVoid(ValueLayout.ADDRESS)
             );
             final MethodHandle getRegistryMH = LINKER.downcallHandle(
                 LOOKUP.find("JNL_GetRegistry").orElseThrow(),
@@ -745,4 +750,13 @@ public class CardGame implements AutoCloseable {
             throw new RuntimeException("Destructor failed", e);
         }
     }
+    public static void setCppError(String msg) {
+        try (Arena a = Arena.ofConfined()) {
+            MemorySegment cStr = a.allocateFrom(msg);
+            mh_setLastError.invokeExact(cStr);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

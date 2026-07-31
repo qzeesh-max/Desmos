@@ -16,8 +16,9 @@
 //   Suits: S (spades), H (hearts), D (diamonds), C (clubs)
 //   Examples: "AS" = Ace of Spades, "TH" = 10 of Hearts, "KD" = King of Diamonds
 // =============================================================================
+#include <JavaNativeLink/Annotations.h>
 
-struct CardGame {
+struct [[jnl::java_export]] CardGame {
     // Game state
     std::string status;      // "waiting", "playing", "player_bust", "dealer_bust", "player_win", "dealer_win", "push"
     int playerScore;

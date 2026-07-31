@@ -1,4 +1,0 @@
-core_test 1 0.364101
-inject_test 1 0.22401
-reflection_test 1 0.196783
----

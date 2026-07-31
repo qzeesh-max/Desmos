@@ -1,6 +1,7 @@
 #include "JavaNativeLink/Exporter.h"
 #include <iostream>
 #include <string>
+#include <JavaNativeLink/Annotations.h>
 
 // =============================================================================
 // MyClass - A template C++ class for JavaNativeLink
@@ -10,7 +11,7 @@
 // exported to Java via C++26 reflection.
 // =============================================================================
 
-struct MyClass {
+struct [[jnl::java_export]] MyClass {
     int value;
     std::string name;
 
