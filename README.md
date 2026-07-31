@@ -247,7 +247,21 @@ See `template/README.md` for full details.
 
 ## Examples
 
-### Blackjack Card Game
+### 1. Sorting Visualizer
+
+A high-performance real-time visualization of sorting algorithms (Bubble Sort, Quick Sort, Radix Sort).
+- **C++ Backend** (`examples/sorting/Sorter.cpp`): Implements the sorting logic and mutates an atomic conflating queue array without locking.
+- **Java Frontend** (`examples/sorting/SortingVisualizer.java`): A Swing application that polls the lock-free data structure from C++ using FFM at 60 FPS, ensuring no stale updates or UI stuttering.
+
+To build and run:
+```bash
+mkdir build && cd build
+cmake ..
+cmake --build .
+cmake --build . --target run_Sorter
+```
+
+### 2. Blackjack Card Game
 
 A complete Blackjack game demonstrating a Java Swing GUI frontend powered by a C++ game engine backend via JNL.
 
@@ -256,15 +270,10 @@ A complete Blackjack game demonstrating a Java Swing GUI frontend powered by a C
 
 To build and run:
 ```bash
-# First build the core JNL library from the repo root:
-./build.sh              # or build.bat -UseMSYS2 on Windows
-
-# Then build the card game:
-cd examples/cardgame
-./build.sh              # or build.bat on Windows
-
-# Launch the game:
-java --enable-native-access=ALL-UNNAMED -Djava.library.path=.:../../build CardGameUI
+mkdir build && cd build
+cmake ..
+cmake --build .
+cmake --build . --target run_CardGame
 ```
 
 ## Architecture Details
