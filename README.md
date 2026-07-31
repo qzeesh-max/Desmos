@@ -43,8 +43,18 @@ Run the provided shell script from the repository root:
 ```bash
 ./build.sh
 ```
-Ensure that GCC 16 is installed and set as the default compiler (`g++-16` or `g++` depending on your environment), and that JDK 22 is correctly configured in your `JAVA_HOME`.
+Ensure that GCC 16 is installed (`g++-16` or `g++` depending on your environment), and that JDK 22+ is correctly configured in your `JAVA_HOME`.
 
+If your default compiler is not GCC 16 (for instance, on macOS where it defaults to Apple Clang), you must explicitly tell CMake to use it by setting the `CXX` environment variable or using the CMake flag:
+
+```bash
+# Option 1: Environment variable
+export CXX=g++-16
+cmake ..
+
+# Option 2: CMake flag
+cmake -DCMAKE_CXX_COMPILER=g++-16 ..
+```
 ---
 
 ## 1. Exposing C++ Classes to Java
@@ -256,7 +266,7 @@ A high-performance real-time visualization of sorting algorithms (Bubble Sort, Q
 To build and run:
 ```bash
 mkdir build && cd build
-cmake ..
+cmake -DCMAKE_CXX_COMPILER=g++-16 ..
 cmake --build .
 cmake --build . --target run_Sorter
 ```
@@ -271,7 +281,7 @@ A complete Blackjack game demonstrating a Java Swing GUI frontend powered by a C
 To build and run:
 ```bash
 mkdir build && cd build
-cmake ..
+cmake -DCMAKE_CXX_COMPILER=g++-16 ..
 cmake --build .
 cmake --build . --target run_CardGame
 ```
