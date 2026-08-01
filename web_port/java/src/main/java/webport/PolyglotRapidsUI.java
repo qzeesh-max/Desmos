@@ -109,8 +109,8 @@ public class PolyglotRapidsUI {
         
         HTMLImageElement logo = (HTMLImageElement) document.createElement("img");
         logo.setSrc("assets/polyglot_logo.png");
-        logo.getStyle().setProperty("max-width", "400px");
-        logo.getStyle().setProperty("margin-bottom", "20px");
+        logo.getStyle().setProperty("max-width", "300px");
+        logo.getStyle().setProperty("margin-bottom", "10px");
         screensPanel.appendChild(logo);
 
         HTMLElement rulesText = document.createElement("p");
@@ -240,13 +240,15 @@ public class PolyglotRapidsUI {
         wrapper.getStyle().setProperty("display", "flex");
         
         canvas = (HTMLCanvasElement) document.createElement("canvas");
-        canvas.setWidth(600);
+        canvas.setWidth(600); // Internal resolution remains 600x600 for game logic
         canvas.setHeight(600);
+        canvas.getStyle().setProperty("width", "460px"); // Display size scaled down
+        canvas.getStyle().setProperty("height", "460px");
         canvas.getStyle().setProperty("background-color", "#000");
         ctx = (CanvasRenderingContext2D) canvas.getContext("2d");
         
         HTMLElement sidebar = document.createElement("div");
-        sidebar.getStyle().setProperty("width", "300px");
+        sidebar.getStyle().setProperty("width", "280px");
         sidebar.getStyle().setProperty("background-color", "#333");
         sidebar.getStyle().setProperty("display", "flex");
         sidebar.getStyle().setProperty("flex-direction", "column");
@@ -256,7 +258,7 @@ public class PolyglotRapidsUI {
         uiPanel.getStyle().setProperty("color", "#fff");
         uiPanel.getStyle().setProperty("flex-grow", "1");
         uiPanel.getStyle().setProperty("overflow-y", "auto");
-        uiPanel.getStyle().setProperty("height", "500px");
+        uiPanel.getStyle().setProperty("height", "400px");
         
         HTMLButtonElement newGameBtn = (HTMLButtonElement) document.createElement("button");
         newGameBtn.setInnerHTML("New Game");
