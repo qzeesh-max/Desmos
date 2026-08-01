@@ -137,6 +137,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             newHeight = 650; // Blackjack has more vertical content
         } else if (tabId === 'sorting') {
             newHeight = 550; // Sorting is a bit shorter
+        } else if (tabId === 'polyglot') {
+            newHeight = 600; // Extra height for the game canvas and New Game button
         }
         window.parent.postMessage({ type: 'resize', width: newWidth, height: newHeight, winId: winId }, '*');
     }
