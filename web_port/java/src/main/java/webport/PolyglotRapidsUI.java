@@ -36,6 +36,9 @@ public class PolyglotRapidsUI {
     private static HTMLElement uiPanel;
     private static HTMLElement screensPanel;
     
+    private static HTMLAudioElement backgroundSound;
+    private static boolean soundEnabled = false;
+    
     private static boolean leftPressed = false;
     private static boolean rightPressed = false;
     private static int intervalId = -1;
@@ -68,6 +71,28 @@ public class PolyglotRapidsUI {
         
         container.setInnerHTML("");
         
+        backgroundSound = (HTMLAudioElement) document.createElement("audio");
+        backgroundSound.setSrc("assets/river.wav");
+        backgroundSound.setId("game-background-music");
+        backgroundSound.setLoop(true);
+        container.appendChild(backgroundSound);
+
+        Window.current().addEventListener("focusin", new EventListener<FocusEvent>() {
+            @Override
+            public void handleEvent(FocusEvent event) {
+                if (soundEnabled) {
+                    backgroundSound.play();
+                }
+            }
+        });
+
+        Window.current().addEventListener("blur", new EventListener<FocusEvent>() {
+            @Override
+            public void handleEvent(FocusEvent event) {
+                backgroundSound.pause();
+            }
+        });
+        
         screensPanel = document.createElement("div");
         container.appendChild(screensPanel);
         
@@ -75,6 +100,11 @@ public class PolyglotRapidsUI {
     }
     
     private static void showRulesScreen() {
+        soundEnabled = false;
+        if (backgroundSound != null) {
+            backgroundSound.pause();
+            backgroundSound.setCurrentTime(0.0);
+        }
         screensPanel.setInnerHTML("");
         
         HTMLImageElement logo = (HTMLImageElement) document.createElement("img");
@@ -83,12 +113,6 @@ public class PolyglotRapidsUI {
         logo.getStyle().setProperty("margin-bottom", "20px");
         screensPanel.appendChild(logo);
 
-        HTMLAudioElement backgroundSound = (HTMLAudioElement) document.createElement("audio");
-        backgroundSound.setSrc("assets/river.wav");
-        backgroundSound.setId("game-background-music");
-        backgroundSound.setLoop(true);
-        screensPanel.appendChild(backgroundSound);
-        
         HTMLElement rulesText = document.createElement("p");
         rulesText.setInnerHTML(
             "- Steer your raft using the LEFT and RIGHT arrow keys.<br>" +
@@ -109,67 +133,17 @@ public class PolyglotRapidsUI {
         nextBtn.addEventListener("click", new EventListener<Event>() {
             @Override
             public void handleEvent(Event evt) {
-                HTMLElement rawElement = document.getElementById("game-background-music");
-                HTMLAudioElement audio = (HTMLAudioElement) rawElement;
-                audio.play();
+                soundEnabled = true;
+                backgroundSound.play();
                 showLangScreen();
             }
         });
         screensPanel.appendChild(nextBtn);
-
-        // Triggers whenever any child element GAINS focus
-        Window.current().addEventListener("focusin", new EventListener<FocusEvent>() {
-            @Override
-            public void handleEvent(FocusEvent event) {
-                HTMLElement rawElement = document.getElementById("game-background-music");
-                HTMLAudioElement audio = (HTMLAudioElement) rawElement;
-                audio.play();
-            }
-        });
-
-        // Triggers whenever any child element LOSES focus
-        Window.current().addEventListener("blur", new EventListener<FocusEvent>() {
-            @Override
-            public void handleEvent(FocusEvent event) {
-                HTMLElement rawElement = document.getElementById("game-background-music");
-                HTMLAudioElement audio = (HTMLAudioElement) rawElement;
-                audio.pause();
-                audio.setCurrentTime(0.0);
-            }
-        });
     }
     
     private static void showLangScreen() {
         
         screensPanel.setInnerHTML("");
-
-        HTMLAudioElement backgroundSound = (HTMLAudioElement) document.createElement("audio");
-        backgroundSound.setSrc("assets/river.wav");
-        backgroundSound.setId("game-background-music");
-        backgroundSound.setLoop(true);
-        screensPanel.appendChild(backgroundSound);
-        backgroundSound.play();
-        
-        // Triggers whenever any child element GAINS focus
-        Window.current().addEventListener("focusin", new EventListener<FocusEvent>() {
-            @Override
-            public void handleEvent(FocusEvent event) {
-                HTMLElement rawElement = document.getElementById("game-background-music");
-                HTMLAudioElement audio = (HTMLAudioElement) rawElement;
-                audio.play();
-            }
-        });
-
-        // Triggers whenever any child element LOSES focus
-        Window.current().addEventListener("blur", new EventListener<FocusEvent>() {
-            @Override
-            public void handleEvent(FocusEvent event) {
-                HTMLElement rawElement = document.getElementById("game-background-music");
-                HTMLAudioElement audio = (HTMLAudioElement) rawElement;
-                audio.pause();
-                audio.setCurrentTime(0.0);
-            }
-        });
         
         HTMLElement title = document.createElement("h2");
         title.setInnerHTML("Select Languages");
@@ -262,36 +236,10 @@ public class PolyglotRapidsUI {
     private static void setupGameScreen() {
         screensPanel.setInnerHTML("");
         
-        HTMLAudioElement backgroundSound = (HTMLAudioElement) document.createElement("audio");
-        backgroundSound.setSrc("assets/river.wav");
-        backgroundSound.setId("game-background-music");
-        backgroundSound.setLoop(true);
-        screensPanel.appendChild(backgroundSound);
-        backgroundSound.play();
-
-        // Triggers whenever any child element GAINS focus
-        Window.current().addEventListener("focusin", new EventListener<FocusEvent>() {
-            @Override
-            public void handleEvent(FocusEvent event) {
-                HTMLElement rawElement = document.getElementById("game-background-music");
-                HTMLAudioElement audio = (HTMLAudioElement) rawElement;
-                audio.play();
-            }
-        });
-
-        // Triggers whenever any child element LOSES focus
-        Window.current().addEventListener("blur", new EventListener<FocusEvent>() {
-            @Override
-            public void handleEvent(FocusEvent event) {
-                HTMLElement rawElement = document.getElementById("game-background-music");
-                HTMLAudioElement audio = (HTMLAudioElement) rawElement;
-                audio.pause();
-                audio.setCurrentTime(0.0);
-            }
-        });
-        
         HTMLElement wrapper = document.createElement("div");
         wrapper.getStyle().setProperty("display", "flex");
+        wrapper.getStyle().setProperty("flex-wrap", "wrap");
+        wrapper.getStyle().setProperty("justify-content", "center");
         
         canvas = (HTMLCanvasElement) document.createElement("canvas");
         canvas.setWidth(600);
