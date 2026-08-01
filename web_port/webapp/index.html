@@ -109,15 +109,37 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </div>
 
 <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const winId = urlParams.get('winId') || 'desmos-webapp';
+
     function showTab(event, tabId) {
         // Update tabs
         document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-        event.currentTarget.classList.add('active');
+        if (event) {
+            event.currentTarget.classList.add('active');
+        } else {
+            document.querySelector('.tab').classList.add('active');
+        }
 
         // Update sections
         document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
+        
+        // Notify parent window to resize based on content
+        let newWidth = 850;
+        let newHeight = 560;
+        if (tabId === 'cardgame') {
+            newHeight = 650; // Blackjack has more vertical content
+        } else if (tabId === 'sorting') {
+            newHeight = 550; // Sorting is a bit shorter
+        }
+        window.parent.postMessage({ type: 'resize', width: newWidth, height: newHeight, winId: winId }, '*');
     }
+    
+    // Initialize size on load
+    window.onload = () => {
+        showTab(null, 'cardgame');
+    };
 </script>
 
 </body>
