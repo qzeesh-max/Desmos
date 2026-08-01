@@ -158,7 +158,7 @@ public class PolyglotRapidsUI {
         HTMLElement form = document.createElement("div");
         form.getStyle().setProperty("display", "grid");
         form.getStyle().setProperty("grid-template-columns", "repeat(5, 1fr)");
-        form.getStyle().setProperty("gap", "10px");
+        form.getStyle().setProperty("gap", "4px");
         
         for (int i = 0; i < LANG_CODES.length; i++) {
             String code = LANG_CODES[i];
@@ -175,10 +175,12 @@ public class PolyglotRapidsUI {
             btn.getStyle().setProperty("justify-content", "center");
             btn.getStyle().setProperty("cursor", "pointer");
             btn.getStyle().setProperty("border", "2px solid #ccc");
-            btn.getStyle().setProperty("border-radius", "5px");
+            btn.getStyle().setProperty("border-radius", "4px");
             btn.getStyle().setProperty("background-color", "#444");
             btn.getStyle().setProperty("color", "white");
-            btn.getStyle().setProperty("padding", "5px");
+            btn.getStyle().setProperty("padding", "3px");
+            btn.getStyle().setProperty("margin", "0");
+            btn.getStyle().setProperty("font-size", "14px");
             
             if (code.equals("en")) {
                 btn.setAttribute("data-selected", "true");
@@ -219,6 +221,9 @@ public class PolyglotRapidsUI {
         
         HTMLButtonElement startBtn = (HTMLButtonElement) document.createElement("button");
         startBtn.setInnerHTML("Start Rafting!");
+        startBtn.getStyle().setProperty("margin-top", "10px");
+        startBtn.getStyle().setProperty("padding", "8px 16px");
+        startBtn.getStyle().setProperty("font-size", "16px");
         startBtn.addEventListener("click", e -> startGame());
         screensPanel.appendChild(startBtn);
     }
@@ -255,11 +260,13 @@ public class PolyglotRapidsUI {
         
         HTMLElement sidebar = document.createElement("div");
         sidebar.getStyle().setProperty("width", "280px");
+        sidebar.getStyle().setProperty("height", "460px"); // Constrain to canvas height!
         sidebar.getStyle().setProperty("background-color", "#333");
         sidebar.getStyle().setProperty("display", "flex");
         sidebar.getStyle().setProperty("flex-direction", "column");
 
         uiPanel = document.createElement("div");
+        uiPanel.getStyle().setProperty("box-sizing", "border-box");
         uiPanel.getStyle().setProperty("padding", "20px");
         uiPanel.getStyle().setProperty("color", "#fff");
         uiPanel.getStyle().setProperty("flex-grow", "1");
@@ -268,7 +275,7 @@ public class PolyglotRapidsUI {
         
         HTMLButtonElement newGameBtn = (HTMLButtonElement) document.createElement("button");
         newGameBtn.setInnerHTML("New Game");
-        newGameBtn.getStyle().setProperty("margin", "20px");
+        newGameBtn.getStyle().setProperty("margin", "10px");
         newGameBtn.getStyle().setProperty("padding", "10px");
         newGameBtn.getStyle().setProperty("cursor", "pointer");
         newGameBtn.getStyle().setProperty("background-color", "#4CAF50");
