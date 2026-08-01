@@ -47,6 +47,14 @@ fi
 mvn clean package
 
 echo "======================================"
+echo " 3. Copying Web Assets"
+echo "======================================"
+cp -r ../../examples/polyglot/assets/flags ../webapp/assets/flags
+cp ../../examples/polyglot/assets/polyglot_logo.png ../../examples/polyglot/assets/river.wav ../webapp/assets
+
+
+
+echo "======================================"
 echo " Build Complete!"
 echo "======================================"
 echo "To run the Web Port locally, start the Python server:"

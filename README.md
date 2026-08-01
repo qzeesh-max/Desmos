@@ -290,8 +290,22 @@ cmake --build .
 cmake --build . --target run_CardGame
 ```
 
-### 3. WebAssembly / TeaVM Port
-The `CardGame` and `SortingVisualizer` examples have also been ported to run in a web browser using WebAssembly (via Emscripten) and TeaVM! 
+### 3. Polyglot Rapids (Typing Game)
+
+An educational multi-lingual typing and vocabulary game built with C++ and Java.
+- **C++ Backend** (`examples/polyglot/PolyglotRapids.cpp`): Game engine handling raft physics, word dictionaries in multiple languages, obstacle spawning, collision detection, and scoring logic.
+- **Java Frontend** (`examples/polyglot/PolyglotRapidsUI.java`): A Swing application rendering a smoothly scrolling river, the player's raft, and floating letters using custom 2D graphics.
+
+To build and run:
+```bash
+mkdir build && cd build
+cmake -DCMAKE_CXX_COMPILER=g++-16 ..
+cmake --build .
+cmake --build . --target run_Polyglot
+```
+
+### 4. WebAssembly / TeaVM Port
+The `CardGame`, `SortingVisualizer`, and `PolyglotRapids` examples have also been ported to run in a web browser using WebAssembly (via Emscripten) and TeaVM! 
 
 This allows you to showcase the C++ computationally intensive backend seamlessly interacting with Java UI code running within the browser context. Check out the dedicated documentation for this in the `web_port` directory.
 

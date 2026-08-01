@@ -18,16 +18,19 @@ set -e
 
 echo "Building Desmos on WSL/macOS..."
 
-# Ensure JAVA_HOME is set
-if [ -z "$JAVA_HOME" ]; then
-    if [ -d "$HOME/jdk/jdk-22.0.2" ]; then
-        export JAVA_HOME="$HOME/jdk/jdk-22.0.2"
-        export PATH="$JAVA_HOME/bin:$PATH"
-    elif ! command -v javac &> /dev/null; then
-        echo "JAVA_HOME not set and jdk-22 not found in ~/jdk, and javac is not in PATH. Please install JDK 22."
-        exit 1
-    fi
-fi
+# Ensure JAVA_HOME is set to JDK 22+
+#if [ -d "/opt/homebrew/opt/openjdk@26" ]; then
+#    export JAVA_HOME="/opt/homebrew/opt/openjdk@26"
+#    export PATH="$JAVA_HOME/bin:$PATH"
+#elif [ -z "$JAVA_HOME" ]; then
+#    if [ -d "$HOME/jdk/jdk-22.0.2" ]; then
+#        export JAVA_HOME="$HOME/jdk/jdk-22.0.2"
+#        export PATH="$JAVA_HOME/bin:$PATH"
+#    elif ! command -v javac &> /dev/null; then
+#        echo "JAVA_HOME not set and jdk-22 not found in ~/jdk, and javac is not in PATH. Please install JDK 22."
+#        exit 1
+#    fi
+#fi
 
 # Clean and create build directory
 rm -rf build && mkdir build && cd build

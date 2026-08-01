@@ -1,0 +1,10 @@
+
+PolyGlot Rapids Assets License
+
+1. Flags: Flag images are sourced from Flagpedia (flagcdn.com) or similar open sources, which provide them under public domain or permissive licenses.
+2. Dictionaries: Sourced from HermitDave's FrequencyWords (MIT License), containing word frequencies based on OpenSubtitles.
+3. Sprites: Procedurally generated SVGs (CC0/Public Domain) created for this project.
+
+MIT License for FrequencyWords Data:
+Copyright (c) 2016 David
+Permission is hereby granted, free of charge... (standard MIT)

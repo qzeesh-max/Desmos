@@ -35,4 +35,14 @@ emcc SorterWasm.cpp -o ../webapp/assets/sorter.js \
     -s MODULARIZE=1 \
     -s ALLOW_MEMORY_GROWTH=1
 
-echo "Done compiling WebAssembly modules."
+echo "Compiling PolyglotRapids..."
+emcc PolyglotRapidsWasm.cpp -o ../webapp/polyglot.js \
+    -O3 \
+    --bind \
+    -I./dummy_include \
+    -s EXPORT_NAME="createPolyglotModule" \
+    -s MODULARIZE=1 \
+    -s INITIAL_MEMORY=33554432 \
+    --preload-file ../../examples/polyglot/assets@examples/polyglot/assets
+
+echo "WebAssembly modules compiled successfully."

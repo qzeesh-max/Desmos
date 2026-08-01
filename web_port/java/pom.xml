@@ -76,6 +76,18 @@
                             <optimizationLevel>ADVANCED</optimizationLevel>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>polyglot-ui</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>webport.PolyglotRapidsUI</mainClass>
+                            <targetDirectory>${project.build.directory}/generated/js/polyglot</targetDirectory>
+                            <targetFileName>classes.js</targetFileName>
+                            <optimizationLevel>ADVANCED</optimizationLevel>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -107,6 +119,13 @@
                                         <include>app.js</include>
                                     </includes>
                                     <targetPath>sorting</targetPath>
+                                </resource>
+                                <resource>
+                                    <directory>${project.build.directory}/generated/js/polyglot</directory>
+                                    <includes>
+                                        <include>classes.js</include>
+                                    </includes>
+                                    <targetPath>teavm</targetPath>
                                 </resource>
                             </resources>
                         </configuration>

@@ -1,6 +1,6 @@
 # Desmos Web Port
 
-This directory contains the WebAssembly and TeaVM port of the `Desmos` desktop examples (`CardGame` and `SortingVisualizer`). This allows you to run the C++ computationally intensive logic directly in the browser via WebAssembly, while rendering the UI using Java compiled to JavaScript (via TeaVM).
+This directory contains the WebAssembly and TeaVM port of the `Desmos` desktop examples (`CardGame`, `SortingVisualizer`, and `PolyglotRapids`). This allows you to run the C++ computationally intensive logic directly in the browser via WebAssembly, while rendering the UI using Java compiled to JavaScript (via TeaVM).
 
 ## Prerequisites
 
@@ -33,10 +33,10 @@ Open your browser to `http://localhost:8000`.
 
 ## Architecture
 
-- **`cpp/`**: Contains the C++ logic. The original C++ source files have been stripped of the proprietary `Desmos` FFM annotations since they are incompatible with Emscripten. We provide `CardGameWasm.cpp` and `SorterWasm.cpp` to expose the C++ functions to JavaScript using `emscripten::bind`.
+- **`cpp/`**: Contains the C++ logic. The original C++ source files have been stripped of the proprietary `Desmos` FFM annotations since they are incompatible with Emscripten. We provide `CardGameWasm.cpp`, `SorterWasm.cpp`, and `PolyglotRapidsWasm.cpp` to expose the C++ functions to JavaScript using `emscripten::bind`.
 - **`java/`**: Contains the TeaVM Java frontend UI code. It leverages `teavm-jso` to bind to HTML5 APIs like Canvas, and calls into the Emscripten WASM modules through the `Interop.java` class.
 - **`webapp/`**: Contains the static HTML files, CSS, and the `assets/` directory where the compiled `.js` and `.wasm` artifacts are placed. 
 
 ## Technical Details (TeaVM)
 
-TeaVM applications default to placing their runtime and main entries directly into the global JavaScript namespace. Since we showcase multiple TeaVM components on the same page, we encapsulate each app within an `<iframe>` inside `index.html` (e.g. `cardgame.html` and `sorter.html`). This cleanly avoids namespace collisions.
+TeaVM applications default to placing their runtime and main entries directly into the global JavaScript namespace. Since we showcase multiple TeaVM components on the same page, we encapsulate each app within an `<iframe>` inside `index.html` (e.g. `cardgame.html`, `sorter.html`, and `polyglot.html`). This cleanly avoids namespace collisions.

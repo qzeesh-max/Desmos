@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PolyGlot Rapids - Desmos Web Port</title>
+    <style>
+        body { font-family: sans-serif; background-color: #222; color: #fff; text-align: center; }
+        #polyglot-container { display: inline-block; background-color: #333; border: 2px solid #555; padding: 20px; border-radius: 10px; margin-top: 20px; }
+        canvas { outline: none; }
+        button { font-size: 18px; padding: 10px 20px; cursor: pointer; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <audio loop autoplay src="assets/river.wav"></audio>
+    <div id="polyglot-container">
+        <!-- UI will be rendered here by TeaVM -->
+    </div>
+
+    <!-- 1. Load the Emscripten WebAssembly Module -->
+    <script>
+        document.write('<script src="polyglot.js?v=' + Date.now() + '"><\/script>');
+    </script>
+    <script>
+        // Initialize the WebAssembly module and attach it to the window
+        createPolyglotModule({
+            locateFile: function(path, prefix) {
+                if (path.endsWith('.data') || path.endsWith('.wasm')) {
+                    return prefix + path + '?v=' + Date.now();
+                }
+                return prefix + path;
+            }
+        }).then(function(Module) {
+            console.log("PolyGlot WASM Module Loaded");
+            window.polyglotInstance = new Module.PolyglotRapids();
+            
+            // 2. Once WASM is ready, load the TeaVM Java UI
+            var script = document.createElement('script');
+            script.src = 'assets/teavm/classes.js?v=' + Date.now();
+            document.body.appendChild(script);
+            
+            script.onload = function() {
+                console.log("TeaVM Java UI Loaded");
+                // Webport generates a main method that we call
+                main(["polyglot"]); 
+            };
+        });
+    </script>
+</body>
+</html>
