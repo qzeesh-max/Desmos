@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# WebAssembly & TeaVM Build Script for JavaNativeLink Web Port
+# WebAssembly & TeaVM Build Script for Desmos Web Port
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

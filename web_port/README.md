@@ -1,6 +1,6 @@
-# JavaNativeLink Web Port
+# Desmos Web Port
 
-This directory contains the WebAssembly and TeaVM port of the `JavaNativeLink` desktop examples (`CardGame` and `SortingVisualizer`). This allows you to run the C++ computationally intensive logic directly in the browser via WebAssembly, while rendering the UI using Java compiled to JavaScript (via TeaVM).
+This directory contains the WebAssembly and TeaVM port of the `Desmos` desktop examples (`CardGame` and `SortingVisualizer`). This allows you to run the C++ computationally intensive logic directly in the browser via WebAssembly, while rendering the UI using Java compiled to JavaScript (via TeaVM).
 
 ## Prerequisites
 
