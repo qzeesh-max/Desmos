@@ -11,7 +11,7 @@ cd "$(dirname "$0")/java_e2e"
 
 # Compile the core C++ framework into a shared library local to tests
 echo "1. Compiling libDesmos.dylib..."
-g++-16 -std=c++26 -freflection -shared -fPIC -I../../include ../../src/Exporter.cpp -o libDesmos.dylib
+g++-16 -std=c++26 -freflection -shared -fPIC -DDESM_EXPORTS -I../../include ../../src/Exporter.cpp -o libDesmos.dylib
 # Tests look for 'libDesmosTest.dylib' in some cases based on naming
 cp libDesmos.dylib libDesmosTest.dylib
 

@@ -8,7 +8,7 @@ echo =====================================
 cd /d "%~dp0java_e2e"
 
 echo 1. Compiling Desmos.dll...
-g++ -std=c++26 -freflection -shared -I..\..\include ..\..\src\Exporter.cpp -o Desmos.dll
+g++ -std=c++26 -freflection -shared -DDESM_EXPORTS -I..\..\include ..\..\src\Exporter.cpp -o Desmos.dll
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 copy /y Desmos.dll DesmosTest.dll > nul
