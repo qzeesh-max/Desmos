@@ -290,6 +290,13 @@ cmake --build .
 cmake --build . --target run_CardGame
 ```
 
+### 3. WebAssembly / TeaVM Port
+The `CardGame` and `SortingVisualizer` examples have also been ported to run in a web browser using WebAssembly (via Emscripten) and TeaVM! 
+
+This allows you to showcase the C++ computationally intensive backend seamlessly interacting with Java UI code running within the browser context. Check out the dedicated documentation for this in the `web_port` directory.
+
+[**View Web Port Documentation**](web_port/README.md)
+
 ## Architecture Details
 
 - **TypeMapper (`Exporter.h`)**: A template trait that converts between Java FFM C-ABI types (`NativeType`) and native C++ types. Handles pointer indirection, unsigned-to-signed extensions, and `std::function` wrapping automatically.
