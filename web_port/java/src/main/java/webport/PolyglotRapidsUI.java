@@ -238,8 +238,6 @@ public class PolyglotRapidsUI {
         
         HTMLElement wrapper = document.createElement("div");
         wrapper.getStyle().setProperty("display", "flex");
-        wrapper.getStyle().setProperty("flex-wrap", "wrap");
-        wrapper.getStyle().setProperty("justify-content", "center");
         
         canvas = (HTMLCanvasElement) document.createElement("canvas");
         canvas.setWidth(600);
