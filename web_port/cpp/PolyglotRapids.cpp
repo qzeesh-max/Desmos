@@ -364,7 +364,7 @@ struct PolyglotRapids {
         if (found) {
             pendingWord = fullWord;
             activeWord = "";
-            wordLockTimer = 2.5f;
+            wordLockTimer = 15.0f;
             for (const auto& lang : activeLanguages) {
                 if (dictionaries[lang].find(fullWord) != dictionaries[lang].end()) {
                     currentLanguage = lang;
@@ -385,7 +385,7 @@ struct PolyglotRapids {
             }
             if (isPrefix) {
                 if (wordLockTimer > 0) {
-                    wordLockTimer = 2.5f;
+                    wordLockTimer = 15.0f;
                 }
             } else {
                 // Invalid sequence. If we had a pending word, lock it now and start fresh with this invalid letter.
