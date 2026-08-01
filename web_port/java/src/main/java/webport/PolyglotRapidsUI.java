@@ -107,11 +107,16 @@ public class PolyglotRapidsUI {
         }
         screensPanel.setInnerHTML("");
         
+        HTMLElement flexContainer = document.createElement("div");
+        flexContainer.getStyle().setProperty("display", "flex");
+        flexContainer.getStyle().setProperty("align-items", "center");
+        flexContainer.getStyle().setProperty("justify-content", "center");
+        flexContainer.getStyle().setProperty("gap", "20px");
+        
         HTMLImageElement logo = (HTMLImageElement) document.createElement("img");
         logo.setSrc("assets/polyglot_logo.png");
-        logo.getStyle().setProperty("max-width", "300px");
-        logo.getStyle().setProperty("margin-bottom", "10px");
-        screensPanel.appendChild(logo);
+        logo.getStyle().setProperty("max-width", "250px");
+        flexContainer.appendChild(logo);
 
         HTMLElement rulesText = document.createElement("p");
         rulesText.setInnerHTML(
@@ -125,8 +130,9 @@ public class PolyglotRapidsUI {
             "Press 'Next' to select your languages."
         );
         rulesText.getStyle().setProperty("font-size", "18px");
-        rulesText.getStyle().setProperty("text-align", "left");
-        screensPanel.appendChild(rulesText);
+        rulesText.getStyle().setProperty("margin", "0");
+        flexContainer.appendChild(rulesText);
+        screensPanel.appendChild(flexContainer);
         
         HTMLButtonElement nextBtn = (HTMLButtonElement) document.createElement("button");
         nextBtn.setInnerHTML("Next");
@@ -258,7 +264,7 @@ public class PolyglotRapidsUI {
         uiPanel.getStyle().setProperty("color", "#fff");
         uiPanel.getStyle().setProperty("flex-grow", "1");
         uiPanel.getStyle().setProperty("overflow-y", "auto");
-        uiPanel.getStyle().setProperty("height", "400px");
+        uiPanel.getStyle().setProperty("min-height", "0");
         
         HTMLButtonElement newGameBtn = (HTMLButtonElement) document.createElement("button");
         newGameBtn.setInnerHTML("New Game");
