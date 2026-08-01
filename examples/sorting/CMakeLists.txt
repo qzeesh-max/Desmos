@@ -11,3 +11,7 @@ desmos_add_java_binding(Sorter
     JAVA_SOURCES Sorter.java SortingVisualizer.java
     MAIN_CLASS SortingVisualizer
 )
+
+find_package(Threads REQUIRED)
+target_link_libraries(Sorter PRIVATE Threads::Threads)
+target_link_libraries(Sorter_Generator PRIVATE Threads::Threads)
