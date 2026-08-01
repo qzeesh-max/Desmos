@@ -32,11 +32,6 @@ echo "Building and running Java E2E via run_tests.sh..."
 chmod +x tests/run_tests.sh
 ./tests/run_tests.sh
 
-# Build Card Game example
-echo "Building Card Game Example..."
-cd examples/cardgame
-chmod +x build.sh
-./build.sh
-cd ../..
+
 
 echo "Success!"

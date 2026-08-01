@@ -56,13 +56,28 @@ function(desmos_add_java_binding TARGET_NAME)
     # Get the library path for the generator to run successfully (it links to Desmos)
     if(APPLE)
         set(ENV_LIB_VAR "DYLD_LIBRARY_PATH")
+        set(ENV_PATH_SEP ":")
+    elseif(WIN32)
+        set(ENV_LIB_VAR "PATH")
+        set(ENV_PATH_SEP "$<SEMICOLON>")
     else()
         set(ENV_LIB_VAR "LD_LIBRARY_PATH")
+        set(ENV_PATH_SEP ":")
     endif()
 
+    # Find generated Java files
+    set(GENERATED_JAVA_SOURCES "")
+    foreach(src IN LISTS DESM_JAVA_SOURCES)
+        if(NOT IS_ABSOLUTE ${src})
+            if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${src}")
+                list(APPEND GENERATED_JAVA_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/${src}")
+            endif()
+        endif()
+    endforeach()
+
     add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}_generated.stamp
-        COMMAND ${CMAKE_COMMAND} -E env "${ENV_LIB_VAR}=$<TARGET_FILE_DIR:${DESM_LIBRARY}>:$ENV{${ENV_LIB_VAR}}"
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}_generated.stamp ${GENERATED_JAVA_SOURCES}
+        COMMAND ${CMAKE_COMMAND} -E env "${ENV_LIB_VAR}=$<TARGET_FILE_DIR:${DESM_LIBRARY}>${ENV_PATH_SEP}$ENV{${ENV_LIB_VAR}}"
                 $<TARGET_FILE:${GEN_TARGET}> "${CMAKE_CURRENT_BINARY_DIR}"
         COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}_generated.stamp
         DEPENDS ${GEN_TARGET}
@@ -119,7 +134,7 @@ function(desmos_add_java_binding TARGET_NAME)
     # Create a convenience target to run the java program with native access enabled
     if(DESM_MAIN_CLASS)
         add_custom_target(run_${TARGET_NAME}
-            COMMAND ${Java_JAVA_EXECUTABLE} --enable-native-access=ALL-UNNAMED -Djava.library.path=$<TARGET_FILE_DIR:${TARGET_NAME}>:$<TARGET_FILE_DIR:${DESM_LIBRARY}> -jar $<TARGET_PROPERTY:${TARGET_NAME}_Java,JAR_FILE>
+            COMMAND ${Java_JAVA_EXECUTABLE} --enable-native-access=ALL-UNNAMED -Djava.library.path=$<TARGET_FILE_DIR:${TARGET_NAME}>${ENV_PATH_SEP}$<TARGET_FILE_DIR:${DESM_LIBRARY}> -jar $<TARGET_PROPERTY:${TARGET_NAME}_Java,JAR_FILE>
             DEPENDS ${TARGET_NAME}_Java ${TARGET_NAME}
             COMMENT "Running ${TARGET_NAME} Java App"
             USES_TERMINAL
