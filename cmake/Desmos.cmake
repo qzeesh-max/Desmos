@@ -148,6 +148,7 @@ function(desmos_add_java_binding TARGET_NAME)
     if(DESM_MAIN_CLASS)
         add_custom_target(run_${TARGET_NAME}
             COMMAND ${Java_JAVA_EXECUTABLE} --enable-native-access=ALL-UNNAMED -Djava.library.path=$<TARGET_FILE_DIR:${TARGET_NAME}>${ENV_PATH_SEP}$<TARGET_FILE_DIR:${DESM_LIBRARY}> -jar $<TARGET_PROPERTY:${TARGET_NAME}_Java,JAR_FILE>
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             DEPENDS ${TARGET_NAME}_Java ${TARGET_NAME}
             COMMENT "Running ${TARGET_NAME} Java App"
             USES_TERMINAL
