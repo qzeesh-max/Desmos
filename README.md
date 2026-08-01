@@ -1,5 +1,9 @@
 # Desmos (Desmos)
 
+<p align="center">
+  <img src="docs/desmos_logo.png" width="300" alt="Desmos Logo" />
+</p>
+
 A C++26 reflection-based library for exposing C++ classes to Java using the Java 22+ Foreign Function & Memory API (FFM). 
 
 Desmos automatically analyzes your C++ classes and generates the required bridging code in C, alongside the Java glue code to call it safely. It uses `std::meta` (P2996) available in GCC 16 to inspect C++ classes at compile time, eliminating the need for an external AST parser like SWIG.
