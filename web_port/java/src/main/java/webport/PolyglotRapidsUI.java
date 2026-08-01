@@ -267,9 +267,11 @@ public class PolyglotRapidsUI {
 
         uiPanel = document.createElement("div");
         uiPanel.getStyle().setProperty("box-sizing", "border-box");
-        uiPanel.getStyle().setProperty("padding", "20px");
+        uiPanel.getStyle().setProperty("padding", "10px");
         uiPanel.getStyle().setProperty("color", "#fff");
         uiPanel.getStyle().setProperty("flex-grow", "1");
+        uiPanel.getStyle().setProperty("display", "flex");
+        uiPanel.getStyle().setProperty("flex-direction", "column");
         uiPanel.getStyle().setProperty("overflow-y", "auto");
         uiPanel.getStyle().setProperty("min-height", "0");
         
@@ -451,12 +453,12 @@ public class PolyglotRapidsUI {
         
         // Update UI Panel
         StringBuilder sb = new StringBuilder();
-        sb.append("<h2>Score: ").append(PolyglotInterop.getScore()).append("</h2>");
-        sb.append("<h3>Health: ").append(PolyglotInterop.getHealth()).append("</h3>");
-        sb.append("<div style='width:200px;height:20px;background:#aa0000;border-radius:10px;box-shadow: 2px 2px 5px rgba(0,0,0,0.5);overflow:hidden;'>");
-        sb.append("<div style='width:").append(PolyglotInterop.getHealth()*2).append("px;height:20px;background:#00aa00;border-radius:10px;'></div></div>");
+        sb.append("<h3 style='margin: 0 0 5px 0;'>Score: ").append(PolyglotInterop.getScore()).append("</h3>");
+        sb.append("<h4 style='margin: 0 0 5px 0;'>Health: ").append(PolyglotInterop.getHealth()).append("</h4>");
+        sb.append("<div style='width:200px;height:15px;background:#aa0000;border-radius:10px;box-shadow: 2px 2px 5px rgba(0,0,0,0.5);overflow:hidden;'>");
+        sb.append("<div style='width:").append(PolyglotInterop.getHealth()*2).append("px;height:15px;background:#00aa00;border-radius:10px;'></div></div>");
         
-        sb.append("<div style='height: 50px;'>");
+        sb.append("<div style='height: 40px;'>");
         float timer = PolyglotInterop.getWordLockTimer();
         if (timer > 0) {
             String formatted = String.format("%d.%03d", (int)(timer), (int)(timer * 1000) % 1000);
@@ -480,9 +482,9 @@ public class PolyglotRapidsUI {
             }
         }
         sb.append("</div>");
-        sb.append("<p style='color:yellow;font-size:24px;font-weight:bold;'>Building: <bdi>").append(PolyglotInterop.getActiveWord()).append("</bdi></p>");
-        sb.append("<h4>Found Words:</h4>");
-        sb.append("<div style='height: 200px; overflow-y: scroll; background-color: #222; padding: 10px; border-radius: 5px;'>");
+        sb.append("<div style='margin-top:10px;font-size:18px;font-weight:bold;color:yellow;'>Building: <bdi>").append(PolyglotInterop.getActiveWord()).append("</bdi></div>");
+        sb.append("<h4 style='margin: 10px 0 5px 0;'>Found Words:</h4>");
+        sb.append("<div style='flex-grow: 1; overflow-y: auto; background-color: #222; padding: 10px; border-radius: 5px;'>");
         String fw = PolyglotInterop.getFoundWords();
         if (fw != null && !fw.isEmpty()) {
             String[] words = fw.split(",");
