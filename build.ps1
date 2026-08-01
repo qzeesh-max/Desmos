@@ -9,7 +9,7 @@ if (-not $UseMSVC -and -not $UseMSYS2) {
 
 $ErrorActionPreference = "Stop"
 
-echo "Building JavaNativeLink on Windows..."
+echo "Building Desmos on Windows..."
 
 if ($UseMSVC) {
     echo "Using Microsoft Visual Studio..."
@@ -39,14 +39,14 @@ if ($UseMSYS2) {
     cd tests\java_e2e
     
     # Compile generator
-    g++ -std=c++26 -freflection Generator.cpp -o Generator.exe -I..\..\include -L..\..\build -lJavaNativeLink
+    g++ -std=c++26 -freflection Generator.cpp -o Generator.exe -I..\..\include -L..\..\build -lDesmos
     
     # Run generator
     $env:PATH = "$PWD\..\..\build;" + $env:PATH
     .\Generator.exe
     
     # Compile Native Library for Java tests (Point.dll)
-    g++ -std=c++26 -freflection -fPIC -shared Point.cpp -o Point.dll -I..\..\include -L..\..\build -lJavaNativeLink
+    g++ -std=c++26 -freflection -fPIC -shared Point.cpp -o Point.dll -I..\..\include -L..\..\build -lDesmos
     
     # Compile Java
     javac Point.java Main.java

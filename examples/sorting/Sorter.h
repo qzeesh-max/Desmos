@@ -4,10 +4,10 @@
 #include <thread>
 #include <memory>
 #include <cstdint>
-#include "JavaNativeLink/Exporter.h"
-#include "JavaNativeLink/Annotations.h"
+#include "Desmos/Exporter.h"
+#include "Desmos/Annotations.h"
 
-class [[=jnl::export_java{}]] Sorter {
+class [[=desm::export_java{}]] Sorter {
 private:
     std::vector<int> m_array;
     std::atomic<int>* m_visualArray;
@@ -40,4 +40,4 @@ public:
     void quickSortImpl(int low, int high);
 };
 
-JNL_EXPORT_CLASS(Sorter);
+DESM_EXPORT_CLASS(Sorter);

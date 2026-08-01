@@ -53,11 +53,11 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES "/Users/zeeshanqazi/Desktop/projects/JavaNativeLink/build/libJavaNativeLink.dylib")
-  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libJavaNativeLink.dylib" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libJavaNativeLink.dylib")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES "/Users/zeeshanqazi/Desktop/projects/JavaNativeLink/build/libDesmos.dylib")
+  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libDesmos.dylib" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libDesmos.dylib")
     if(CMAKE_INSTALL_DO_STRIP)
-      execute_process(COMMAND "/usr/bin/strip" -x "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libJavaNativeLink.dylib")
+      execute_process(COMMAND "/usr/bin/strip" -x "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libDesmos.dylib")
     endif()
   endif()
 endif()
@@ -70,15 +70,15 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/JavaNativeLink/JavaNativeLinkTargets.cmake")
+  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/Desmos/DesmosTargets.cmake")
     file(DIFFERENT _cmake_export_file_changed FILES
-         "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/JavaNativeLink/JavaNativeLinkTargets.cmake"
-         "/Users/zeeshanqazi/Desktop/projects/JavaNativeLink/build/CMakeFiles/Export/39b90a3f5a6f1ee5a12366e129c17ee6/JavaNativeLinkTargets.cmake")
+         "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/Desmos/DesmosTargets.cmake"
+         "/Users/zeeshanqazi/Desktop/projects/JavaNativeLink/build/CMakeFiles/Export/af53ce780e328e33c2b861f1793fd3bd/DesmosTargets.cmake")
     if(_cmake_export_file_changed)
-      file(GLOB _cmake_old_config_files "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/JavaNativeLink/JavaNativeLinkTargets-*.cmake")
+      file(GLOB _cmake_old_config_files "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/Desmos/DesmosTargets-*.cmake")
       if(_cmake_old_config_files)
         string(REPLACE ";" ", " _cmake_old_config_files_text "${_cmake_old_config_files}")
-        message(STATUS "Old export file \"$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/JavaNativeLink/JavaNativeLinkTargets.cmake\" will be replaced.  Removing files [${_cmake_old_config_files_text}].")
+        message(STATUS "Old export file \"$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/Desmos/DesmosTargets.cmake\" will be replaced.  Removing files [${_cmake_old_config_files_text}].")
         unset(_cmake_old_config_files_text)
         file(REMOVE ${_cmake_old_config_files})
       endif()
@@ -86,16 +86,16 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
     endif()
     unset(_cmake_export_file_changed)
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/JavaNativeLink" TYPE FILE FILES "/Users/zeeshanqazi/Desktop/projects/JavaNativeLink/build/CMakeFiles/Export/39b90a3f5a6f1ee5a12366e129c17ee6/JavaNativeLinkTargets.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/Desmos" TYPE FILE FILES "/Users/zeeshanqazi/Desktop/projects/JavaNativeLink/build/CMakeFiles/Export/af53ce780e328e33c2b861f1793fd3bd/DesmosTargets.cmake")
   if(CMAKE_INSTALL_CONFIG_NAME MATCHES "^()$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/JavaNativeLink" TYPE FILE FILES "/Users/zeeshanqazi/Desktop/projects/JavaNativeLink/build/CMakeFiles/Export/39b90a3f5a6f1ee5a12366e129c17ee6/JavaNativeLinkTargets-noconfig.cmake")
+    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/Desmos" TYPE FILE FILES "/Users/zeeshanqazi/Desktop/projects/JavaNativeLink/build/CMakeFiles/Export/af53ce780e328e33c2b861f1793fd3bd/DesmosTargets-noconfig.cmake")
   endif()
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/JavaNativeLink" TYPE FILE FILES
-    "/Users/zeeshanqazi/Desktop/projects/JavaNativeLink/build/JavaNativeLinkConfig.cmake"
-    "/Users/zeeshanqazi/Desktop/projects/JavaNativeLink/cmake/JavaNativeLink.cmake"
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/Desmos" TYPE FILE FILES
+    "/Users/zeeshanqazi/Desktop/projects/JavaNativeLink/build/DesmosConfig.cmake"
+    "/Users/zeeshanqazi/Desktop/projects/JavaNativeLink/cmake/Desmos.cmake"
     )
 endif()
 

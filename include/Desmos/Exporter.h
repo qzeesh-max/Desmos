@@ -14,63 +14,63 @@
 #include <functional>
 
 #ifdef _WIN32
-    #if defined(JNL_EXPORTS) || defined(JavaNativeLink_EXPORTS)
-        #define JNL_EXPORT __declspec(dllexport)
+    #if defined(DESM_EXPORTS) || defined(Desmos_EXPORTS)
+        #define DESM_EXPORT __declspec(dllexport)
     #else
-        #define JNL_EXPORT __declspec(dllimport)
+        #define DESM_EXPORT __declspec(dllimport)
     #endif
 #else
-    #define JNL_EXPORT __attribute__((visibility("default")))
+    #define DESM_EXPORT __attribute__((visibility("default")))
 #endif
 
 extern "C" {
 
-struct JNLMethod {
+struct DesmMethod {
     const char* name;
     void* func_ptr;
 };
 
-struct JNLField {
+struct DesmField {
     const char* name;
     void* getter_ptr;
     void* setter_ptr;
 };
 
-struct JNLThreadError {
+struct DesmThreadError {
     bool has_error;
     char message[1024];
 };
 
-struct JNLClassRegistry {
+struct DesmClassRegistry {
     const char* class_name;
     
-    JNLMethod* methods;
+    DesmMethod* methods;
     size_t num_methods;
     
-    JNLMethod* constructors;
+    DesmMethod* constructors;
     size_t num_constructors;
     
     void* destructor;
     
-    JNLField* fields;
+    DesmField* fields;
     size_t num_fields;
 };
 
 // Global registration function that FFM can call
-JNL_EXPORT const JNLClassRegistry* JNL_GetRegistry(const char* class_name);
-JNL_EXPORT void* JNL_GetLastError();
-JNL_EXPORT void JNL_ClearLastError();
-JNL_EXPORT void JNL_SetError(const char* msg);
-JNL_EXPORT void JNL_Free(void* ptr);
+DESM_EXPORT const DesmClassRegistry* DESM_GetRegistry(const char* class_name);
+DESM_EXPORT void* DESM_GetLastError();
+DESM_EXPORT void DESM_ClearLastError();
+DESM_EXPORT void DESM_SetError(const char* msg);
+DESM_EXPORT void DESM_Free(void* ptr);
 
 } // extern "C"
 
-namespace JNL {
+namespace desm {
 
-JNL_EXPORT void set_error(const char* msg);
+DESM_EXPORT void set_error(const char* msg);
 
 // Registration function used by the macro
-JNL_EXPORT void register_class(const JNLClassRegistry& reg);
+DESM_EXPORT void register_class(const DesmClassRegistry& reg);
 
 // --- Core Reflection Wrappers ---
 
@@ -262,7 +262,7 @@ consteval std::array<std::meta::info, N == 0 ? 1 : N> get_methods(std::meta::inf
 }
 
 template<typename T, size_t N, std::array<std::meta::info, N == 0 ? 1 : N> Methods, size_t I = 0>
-void fill_methods(JNLMethod* out) {
+void fill_methods(DesmMethod* out) {
     if constexpr (N > 0 && I < N) {
         constexpr auto mem = Methods[I];
         constexpr auto ptr = &[: mem :];
@@ -344,7 +344,7 @@ struct ConstructorInvoker {
 };
 
 template<typename T, size_t N, std::array<std::meta::info, N> Constructors, size_t I = 0>
-void fill_constructors(JNLMethod* out) {
+void fill_constructors(DesmMethod* out) {
     if constexpr (I < N) {
         constexpr auto mem = Constructors[I];
         
@@ -410,7 +410,7 @@ consteval std::array<std::meta::info, N == 0 ? 1 : N> get_fields() {
 }
 
 template<size_t N, std::array<std::meta::info, N> Fields, typename Class, size_t I = 0>
-void fill_fields(JNLField* out) {
+void fill_fields(DesmField* out) {
     if constexpr (I < N) {
         constexpr auto field = Fields[I];
         out[I].name = std::meta::identifier_of(field).data();
@@ -432,20 +432,20 @@ void fill_fields(JNLField* out) {
 // Main class exporter
 template<typename T>
 struct ClassExporter {
-    static const JNLClassRegistry& get(const char* explicit_name = nullptr) {
+    static const DesmClassRegistry& get(const char* explicit_name = nullptr) {
         constexpr auto cls = ^^T;
         
         constexpr size_t M = count_methods(cls);
         constexpr auto methods = get_methods<M>(cls);
-        static JNLMethod method_array[M == 0 ? 1 : M];
+        static DesmMethod method_array[M == 0 ? 1 : M];
         
         constexpr size_t C = count_constructors(cls);
         constexpr auto constructors = get_constructors<C>(cls);
-        static JNLMethod constructor_array[C == 0 ? 1 : C];
+        static DesmMethod constructor_array[C == 0 ? 1 : C];
 
         constexpr size_t F = count_fields<cls>();
         constexpr auto fields = get_fields<F, cls>();
-        static JNLField field_array[F == 0 ? 1 : F];
+        static DesmField field_array[F == 0 ? 1 : F];
         
         static bool initialized = false;
         if (!initialized) {
@@ -455,7 +455,7 @@ struct ClassExporter {
             initialized = true;
         }
         
-        static JNLClassRegistry reg {
+        static DesmClassRegistry reg {
             .class_name = explicit_name ? explicit_name : std::meta::identifier_of(cls).data(),
             .methods = method_array,
             .num_methods = M,
@@ -469,11 +469,11 @@ struct ClassExporter {
     }
 };
 
-} // namespace JNL
+} // namespace desm
 
 // Macro to export a class
-#define JNL_EXPORT_CLASS(ClassName) \
-    __attribute__((constructor)) static void ClassName##_JNL_Exporter_Func() { \
-        printf("JNL_EXPORT_CLASS constructor running for %s\n", #ClassName); \
-        JNL::register_class(JNL::ClassExporter<ClassName>::get(#ClassName)); \
+#define DESM_EXPORT_CLASS(ClassName) \
+    __attribute__((constructor)) static void ClassName##_DESM_Exporter_Func() { \
+        printf("DESM_EXPORT_CLASS constructor running for %s\n", #ClassName); \
+        desm::register_class(desm::ClassExporter<ClassName>::get(#ClassName)); \
     }

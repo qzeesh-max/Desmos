@@ -1,4 +1,4 @@
-#include "JavaNativeLink/Exporter.h"
+#include "Desmos/Exporter.h"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -16,9 +16,9 @@
 //   Suits: S (spades), H (hearts), D (diamonds), C (clubs)
 //   Examples: "AS" = Ace of Spades, "TH" = 10 of Hearts, "KD" = King of Diamonds
 // =============================================================================
-#include <JavaNativeLink/Annotations.h>
+#include <Desmos/Annotations.h>
 
-struct [[=jnl::export_java{}]] CardGame {
+struct [[=desm::export_java{}]] CardGame {
     // Game state
     std::string status;      // "waiting", "playing", "player_bust", "dealer_bust", "player_win", "dealer_win", "push"
     int playerScore;
@@ -210,4 +210,4 @@ private:
     }
 };
 
-JNL_EXPORT_CLASS(CardGame);
+DESM_EXPORT_CLASS(CardGame);

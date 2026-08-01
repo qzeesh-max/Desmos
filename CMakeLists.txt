@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(JavaNativeLink CXX)
+project(Desmos CXX)
 
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,13 +14,13 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # Core interface library
-add_library(JavaNativeLink SHARED src/Exporter.cpp)
-add_library(JavaNativeLink::JavaNativeLink ALIAS JavaNativeLink)
+add_library(Desmos SHARED src/Exporter.cpp)
+add_library(Desmos::Desmos ALIAS Desmos)
 
 if(WIN32)
-    set_target_properties(JavaNativeLink PROPERTIES PREFIX "")
+    set_target_properties(Desmos PROPERTIES PREFIX "")
 endif()
-target_include_directories(JavaNativeLink PUBLIC 
+target_include_directories(Desmos PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
@@ -30,11 +30,11 @@ add_subdirectory(tests)
 
 # Provide macros in-tree
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(JavaNativeLink)
+include(Desmos)
 
 # Examples and Template
-option(JNL_BUILD_EXAMPLES "Build examples" ON)
-if(JNL_BUILD_EXAMPLES)
+option(DESM_BUILD_EXAMPLES "Build examples" ON)
+if(DESM_BUILD_EXAMPLES)
     add_subdirectory(template)
     add_subdirectory(examples)
 endif()
@@ -43,8 +43,8 @@ endif()
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
-install(TARGETS JavaNativeLink
-    EXPORT JavaNativeLinkTargets
+install(TARGETS Desmos
+    EXPORT DesmosTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -53,20 +53,20 @@ install(TARGETS JavaNativeLink
 
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-install(EXPORT JavaNativeLinkTargets
-    FILE JavaNativeLinkTargets.cmake
-    NAMESPACE JavaNativeLink::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/JavaNativeLink
+install(EXPORT DesmosTargets
+    FILE DesmosTargets.cmake
+    NAMESPACE Desmos::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Desmos
 )
 
 configure_package_config_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/JavaNativeLinkConfig.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/JavaNativeLinkConfig.cmake
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/JavaNativeLink
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/DesmosConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/DesmosConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Desmos
 )
 
 install(FILES 
-    ${CMAKE_CURRENT_BINARY_DIR}/JavaNativeLinkConfig.cmake
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/JavaNativeLink.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/JavaNativeLink
+    ${CMAKE_CURRENT_BINARY_DIR}/DesmosConfig.cmake
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Desmos.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Desmos
 )

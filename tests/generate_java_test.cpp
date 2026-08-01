@@ -1,5 +1,5 @@
 #include <fstream>
-#include "JavaNativeLink/JavaGenerator.h"
+#include "Desmos/JavaGenerator.h"
 
 struct Point {
     int x;
@@ -12,6 +12,6 @@ struct Point {
 
 int main() {
     std::ofstream out("Point.java");
-    JNL::generate_java<Point>(out);
+    desm::generate_java<Point>(out);
     return 0;
 }

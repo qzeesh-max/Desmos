@@ -1,17 +1,17 @@
-function(jnl_add_java_binding TARGET_NAME)
+function(desmos_add_java_binding TARGET_NAME)
     set(options)
     set(oneValueArgs MAIN_CLASS)
     set(multiValueArgs HEADERS CPP_SOURCES JAVA_SOURCES)
-    cmake_parse_arguments(JNL "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    cmake_parse_arguments(DESM "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    if(NOT JNL_CPP_SOURCES AND NOT JNL_HEADERS)
-        message(FATAL_ERROR "jnl_add_java_binding requires CPP_SOURCES or HEADERS argument")
+    if(NOT DESM_CPP_SOURCES AND NOT DESM_HEADERS)
+        message(FATAL_ERROR "desmos_add_java_binding requires CPP_SOURCES or HEADERS argument")
     endif()
 
-    if(TARGET JavaNativeLink)
-        set(JNL_LIBRARY JavaNativeLink)
+    if(TARGET Desmos)
+        set(DESM_LIBRARY Desmos)
     else()
-        set(JNL_LIBRARY JavaNativeLink::JavaNativeLink)
+        set(DESM_LIBRARY Desmos::Desmos)
     endif()
 
     find_package(Java 22 COMPONENTS Development REQUIRED)
@@ -23,7 +23,7 @@ function(jnl_add_java_binding TARGET_NAME)
     
     # Gather all source files to scan (make them absolute paths)
     set(FILES_TO_SCAN "")
-    foreach(src IN LISTS JNL_HEADERS JNL_CPP_SOURCES)
+    foreach(src IN LISTS DESM_HEADERS DESM_CPP_SOURCES)
         if(IS_ABSOLUTE ${src})
             list(APPEND FILES_TO_SCAN ${src})
         else()
@@ -33,11 +33,11 @@ function(jnl_add_java_binding TARGET_NAME)
 
     # We need to run this at configure time so CMake knows about the generated file
     execute_process(
-        COMMAND ${Python3_EXECUTABLE} "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/jnl_parser.py" "${PARSED_GENERATOR}" ${FILES_TO_SCAN}
+        COMMAND ${Python3_EXECUTABLE} "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/desm_parser.py" "${PARSED_GENERATOR}" ${FILES_TO_SCAN}
         RESULT_VARIABLE PARSER_RESULT
     )
     if(NOT PARSER_RESULT EQUAL 0)
-        message(FATAL_ERROR "JavaNativeLink parser failed for ${TARGET_NAME}")
+        message(FATAL_ERROR "Desmos parser failed for ${TARGET_NAME}")
     endif()
 
     # Re-run CMake if any scanned file changes
@@ -45,15 +45,15 @@ function(jnl_add_java_binding TARGET_NAME)
 
     # 2. Compile the generator
     set(GEN_TARGET ${TARGET_NAME}_Generator)
-    add_executable(${GEN_TARGET} "${PARSED_GENERATOR}" ${JNL_CPP_SOURCES})
-    target_link_libraries(${GEN_TARGET} PRIVATE ${JNL_LIBRARY})
+    add_executable(${GEN_TARGET} "${PARSED_GENERATOR}" ${DESM_CPP_SOURCES})
+    target_link_libraries(${GEN_TARGET} PRIVATE ${DESM_LIBRARY})
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(${GEN_TARGET} PRIVATE -freflection)
     endif()
 
     # 2. Run the generator
     set(RUN_GEN_TARGET ${TARGET_NAME}_RunGenerator)
-    # Get the library path for the generator to run successfully (it links to JavaNativeLink)
+    # Get the library path for the generator to run successfully (it links to Desmos)
     if(APPLE)
         set(ENV_LIB_VAR "DYLD_LIBRARY_PATH")
     else()
@@ -62,18 +62,18 @@ function(jnl_add_java_binding TARGET_NAME)
 
     add_custom_command(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}_generated.stamp
-        COMMAND ${CMAKE_COMMAND} -E env "${ENV_LIB_VAR}=$<TARGET_FILE_DIR:${JNL_LIBRARY}>:$ENV{${ENV_LIB_VAR}}"
+        COMMAND ${CMAKE_COMMAND} -E env "${ENV_LIB_VAR}=$<TARGET_FILE_DIR:${DESM_LIBRARY}>:$ENV{${ENV_LIB_VAR}}"
                 $<TARGET_FILE:${GEN_TARGET}> "${CMAKE_CURRENT_BINARY_DIR}"
         COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}_generated.stamp
         DEPENDS ${GEN_TARGET}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "Running JavaNativeLink generator for ${TARGET_NAME}"
+        COMMENT "Running Desmos generator for ${TARGET_NAME}"
     )
     add_custom_target(${RUN_GEN_TARGET} DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}_generated.stamp)
 
     # 3. Compile the native shared library
-    add_library(${TARGET_NAME} SHARED ${JNL_CPP_SOURCES})
-    target_link_libraries(${TARGET_NAME} PRIVATE ${JNL_LIBRARY})
+    add_library(${TARGET_NAME} SHARED ${DESM_CPP_SOURCES})
+    target_link_libraries(${TARGET_NAME} PRIVATE ${DESM_LIBRARY})
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(${TARGET_NAME} PRIVATE -freflection)
     endif()
@@ -91,7 +91,7 @@ function(jnl_add_java_binding TARGET_NAME)
 
     # 4. Compile Java
     set(JAVA_FULL_SOURCES "")
-    foreach(src IN LISTS JNL_JAVA_SOURCES)
+    foreach(src IN LISTS DESM_JAVA_SOURCES)
         if(IS_ABSOLUTE ${src})
             list(APPEND JAVA_FULL_SOURCES ${src})
         else()
@@ -106,8 +106,8 @@ function(jnl_add_java_binding TARGET_NAME)
     # We don't know the exact names of generated Java files, but the user specifies them in JAVA_SOURCES
     # Use add_jar to build a JAR file
     set(ADD_JAR_ARGS "")
-    if(JNL_MAIN_CLASS)
-        set(ADD_JAR_ARGS ENTRY_POINT ${JNL_MAIN_CLASS})
+    if(DESM_MAIN_CLASS)
+        set(ADD_JAR_ARGS ENTRY_POINT ${DESM_MAIN_CLASS})
     endif()
     
     add_jar(${TARGET_NAME}_Java 
@@ -117,9 +117,9 @@ function(jnl_add_java_binding TARGET_NAME)
     add_dependencies(${TARGET_NAME}_Java ${RUN_GEN_TARGET})
     
     # Create a convenience target to run the java program with native access enabled
-    if(JNL_MAIN_CLASS)
+    if(DESM_MAIN_CLASS)
         add_custom_target(run_${TARGET_NAME}
-            COMMAND ${Java_JAVA_EXECUTABLE} --enable-native-access=ALL-UNNAMED -Djava.library.path=$<TARGET_FILE_DIR:${TARGET_NAME}>:$<TARGET_FILE_DIR:${JNL_LIBRARY}> -jar $<TARGET_PROPERTY:${TARGET_NAME}_Java,JAR_FILE>
+            COMMAND ${Java_JAVA_EXECUTABLE} --enable-native-access=ALL-UNNAMED -Djava.library.path=$<TARGET_FILE_DIR:${TARGET_NAME}>:$<TARGET_FILE_DIR:${DESM_LIBRARY}> -jar $<TARGET_PROPERTY:${TARGET_NAME}_Java,JAR_FILE>
             DEPENDS ${TARGET_NAME}_Java ${TARGET_NAME}
             COMMENT "Running ${TARGET_NAME} Java App"
             USES_TERMINAL

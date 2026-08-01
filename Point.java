@@ -17,7 +17,7 @@ public class Point implements AutoCloseable {
     private static final Linker LINKER = Linker.nativeLinker();
     private static final SymbolLookup LOOKUP;
     static {
-        System.loadLibrary("JavaNativeLinkTest");
+        System.loadLibrary("DesmosTest");
         LOOKUP = SymbolLookup.loaderLookup();
     }
 
@@ -30,7 +30,7 @@ public class Point implements AutoCloseable {
     static {
         try {
             MethodHandle getRegistryMH = LINKER.downcallHandle(
-                LOOKUP.find("JNL_GetRegistry").orElseThrow(),
+                LOOKUP.find("DESM_GetRegistry").orElseThrow(),
                 FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS)
             );
             try (Arena tempArena = Arena.ofConfined()) {

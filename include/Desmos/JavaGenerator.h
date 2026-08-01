@@ -7,9 +7,9 @@
 #include <vector>
 #include <array>
 #include <type_traits>
-#include "JavaNativeLink/Exporter.h"
+#include "Desmos/Exporter.h"
 
-namespace JNL {
+namespace desm {
 
 
 template<typename T>
@@ -242,7 +242,7 @@ void fill_java_constructors(std::vector<JavaMethodMeta>& out) {
 }
 
 template<typename T>
-void generate_java(std::ostream& out, const std::string& package_name = "", const std::string& library_name = "JavaNativeLinkTest") {
+void generate_java(std::ostream& out, const std::string& package_name = "", const std::string& library_name = "DesmosTest") {
     constexpr auto cls = ^^T;
     std::string class_name = std::meta::identifier_of(cls).data();
     
@@ -282,7 +282,7 @@ void generate_java(std::ostream& out, const std::string& package_name = "", cons
     out << "    private static final Linker LINKER = Linker.nativeLinker();\n";
     out << "    private static final SymbolLookup LOOKUP;\n";
     out << "    static {\n";
-    out << "        System.loadLibrary(\"JavaNativeLink\");\n";
+    out << "        System.loadLibrary(\"Desmos\");\n";
     out << "        System.loadLibrary(\"" << library_name << "\");\n";
     out << "        LOOKUP = SymbolLookup.loaderLookup();\n";
     out << "    }\n\n";
@@ -306,29 +306,29 @@ void generate_java(std::ostream& out, const std::string& package_name = "", cons
     out << "    private static MethodHandle mh_getLastError;\n";
     out << "    private static MethodHandle mh_clearLastError;\n";
     out << "    private static MethodHandle mh_setLastError;\n";
-    out << "    private static MethodHandle mh_JNL_Free;\n";
+    out << "    private static MethodHandle mh_DESM_Free;\n";
     
     out << "\n    static {\n";
     out << "        try {\n";
-    out << "            mh_JNL_Free = LINKER.downcallHandle(\n";
-    out << "                LOOKUP.find(\"JNL_Free\").orElseThrow(),\n";
+    out << "            mh_DESM_Free = LINKER.downcallHandle(\n";
+    out << "                LOOKUP.find(\"DESM_Free\").orElseThrow(),\n";
     out << "                FunctionDescriptor.ofVoid(ValueLayout.ADDRESS)\n";
     out << "            );\n";
     out << "            mh_getLastError = LINKER.downcallHandle(\n";
-    out << "                LOOKUP.find(\"JNL_GetLastError\").orElseThrow(),\n";
+    out << "                LOOKUP.find(\"DESM_GetLastError\").orElseThrow(),\n";
     out << "                FunctionDescriptor.of(ValueLayout.ADDRESS)\n";
     out << "            );\n";
     out << "            mh_clearLastError = LINKER.downcallHandle(\n";
-    out << "                LOOKUP.find(\"JNL_ClearLastError\").orElseThrow(),\n";
+    out << "                LOOKUP.find(\"DESM_ClearLastError\").orElseThrow(),\n";
     out << "                FunctionDescriptor.ofVoid()\n";
     out << "            );\n";
     out << "            mh_setLastError = LINKER.downcallHandle(\n";
-    out << "                LOOKUP.find(\"JNL_SetError\").orElseThrow(),\n";
+    out << "                LOOKUP.find(\"DESM_SetError\").orElseThrow(),\n";
     out << "                FunctionDescriptor.ofVoid(ValueLayout.ADDRESS)\n";
     out << "            );\n";
     
     out << "            final MethodHandle getRegistryMH = LINKER.downcallHandle(\n";
-    out << "                LOOKUP.find(\"JNL_GetRegistry\").orElseThrow(),\n";
+    out << "                LOOKUP.find(\"DESM_GetRegistry\").orElseThrow(),\n";
     out << "                FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS)\n";
     out << "            );\n";
     
@@ -541,7 +541,7 @@ void generate_java(std::ostream& out, const std::string& package_name = "", cons
         if (m.return_type_map.java_type != "void") {
             if (m.return_type_map.is_string) {
                 out << "                String _retStr = _res.reinterpret(Long.MAX_VALUE).getString(0);\n";
-                out << "                mh_JNL_Free.invokeExact(_res);\n";
+                out << "                mh_DESM_Free.invokeExact(_res);\n";
                 out << "                return _retStr;\n";
             } else if (m.return_type_map.is_object) {
                 out << "                return new " << m.return_type_map.object_class_name << "(_res, Arena.ofAuto());\n";
@@ -585,7 +585,7 @@ void generate_java(std::ostream& out, const std::string& package_name = "", cons
         out << "                checkError();\n";
         if (fmap.is_string) {
             out << "                String _retStr = _res.reinterpret(Long.MAX_VALUE).getString(0);\n";
-            out << "                mh_JNL_Free.invokeExact(_res);\n";
+            out << "                mh_DESM_Free.invokeExact(_res);\n";
             out << "                return _retStr;\n";
         } else if (fmap.is_object) {
             out << "                return new " << fmap.object_class_name << "(_res, Arena.ofAuto());\n";
@@ -773,22 +773,22 @@ void generate_java(std::ostream& out, const std::string& package_name = "", cons
     out << "}\n";
 }
 
-} // namespace JNL
+} // namespace desm
 
-namespace JNL {
+namespace desm {
 
 template<typename T>
 void generate_cpp_trampoline(std::ostream& out, const std::string& class_name) {
     constexpr auto cls = ^^T;
-    constexpr size_t NM = JNL::count_methods(cls);
-    constexpr auto methods = JNL::get_methods<NM>(cls);
+    constexpr size_t NM = desm::count_methods(cls);
+    constexpr auto methods = desm::get_methods<NM>(cls);
     
-    std::vector<JNL::JavaMethodMeta> m_metas;
-    JNL::fill_java_methods<NM, methods>(m_metas);
+    std::vector<desm::JavaMethodMeta> m_metas;
+    desm::fill_java_methods<NM, methods>(m_metas);
     
     out << "#include <functional>\n";
     out << "#include <stdexcept>\n";
-    out << "#include \"JavaNativeLink/Exporter.h\"\n\n";
+    out << "#include \"Desmos/Exporter.h\"\n\n";
     out << "class " << class_name << "_Trampoline : public " << class_name << " {\n";
     out << "public:\n";
     out << "    void* cb_destroy = nullptr;\n";
@@ -825,10 +825,10 @@ void generate_cpp_trampoline(std::ostream& out, const std::string& class_name) {
                 out << ", a" << i;
             }
             out << ");\n";
-            out << "            auto _err = reinterpret_cast<JNLThreadError*>(JNL_GetLastError());\n";
+            out << "            auto _err = reinterpret_cast<DesmThreadError*>(DESM_GetLastError());\n";
             out << "            if (_err && _err->has_error) {\n";
             out << "                std::string _msg = _err->message;\n";
-            out << "                JNL_ClearLastError();\n";
+            out << "                DESM_ClearLastError();\n";
             out << "                throw std::runtime_error(_msg);\n";
             out << "            }\n";
             if (m.cpp_type != "void") {
@@ -851,7 +851,7 @@ void generate_cpp_trampoline(std::ostream& out, const std::string& class_name) {
         }
     }
     out << "};\n\n";
-    out << "JNL_EXPORT_CLASS(" << class_name << "_Trampoline);\n";
+    out << "DESM_EXPORT_CLASS(" << class_name << "_Trampoline);\n";
 }
 
-} // namespace jnl
+} // namespace desm

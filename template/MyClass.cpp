@@ -1,17 +1,17 @@
-#include "JavaNativeLink/Exporter.h"
+#include "Desmos/Exporter.h"
 #include <iostream>
 #include <string>
-#include <JavaNativeLink/Annotations.h>
+#include <Desmos/Annotations.h>
 
 // =============================================================================
-// MyClass - A template C++ class for JavaNativeLink
+// MyClass - A template C++ class for Desmos
 // 
 // Rename this file and class to match your project.
 // All public constructors, methods, and fields will be automatically
 // exported to Java via C++26 reflection.
 // =============================================================================
 
-struct [[=jnl::export_java{}]] MyClass {
+struct [[=desm::export_java{}]] MyClass {
     int value;
     std::string name;
 
@@ -39,4 +39,4 @@ struct [[=jnl::export_java{}]] MyClass {
 };
 
 // Export the class to Java
-JNL_EXPORT_CLASS(MyClass);
+DESM_EXPORT_CLASS(MyClass);

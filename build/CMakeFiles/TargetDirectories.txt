@@ -1,4 +1,4 @@
-/Users/zeeshanqazi/Desktop/projects/JavaNativeLink/build/CMakeFiles/JavaNativeLink.dir
+/Users/zeeshanqazi/Desktop/projects/JavaNativeLink/build/CMakeFiles/Desmos.dir
 /Users/zeeshanqazi/Desktop/projects/JavaNativeLink/build/CMakeFiles/test.dir
 /Users/zeeshanqazi/Desktop/projects/JavaNativeLink/build/CMakeFiles/edit_cache.dir
 /Users/zeeshanqazi/Desktop/projects/JavaNativeLink/build/CMakeFiles/rebuild_cache.dir

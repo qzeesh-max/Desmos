@@ -17,7 +17,7 @@ public class CardGame implements AutoCloseable {
     private static final Linker LINKER = Linker.nativeLinker();
     private static final SymbolLookup LOOKUP;
     static {
-        System.loadLibrary("JavaNativeLink");
+        System.loadLibrary("Desmos");
         System.loadLibrary("CardGame");
         LOOKUP = SymbolLookup.loaderLookup();
     }
@@ -65,28 +65,28 @@ public class CardGame implements AutoCloseable {
     private static MethodHandle mh_getLastError;
     private static MethodHandle mh_clearLastError;
     private static MethodHandle mh_setLastError;
-    private static MethodHandle mh_JNL_Free;
+    private static MethodHandle mh_DESM_Free;
 
     static {
         try {
-            mh_JNL_Free = LINKER.downcallHandle(
-                LOOKUP.find("JNL_Free").orElseThrow(),
+            mh_DESM_Free = LINKER.downcallHandle(
+                LOOKUP.find("DESM_Free").orElseThrow(),
                 FunctionDescriptor.ofVoid(ValueLayout.ADDRESS)
             );
             mh_getLastError = LINKER.downcallHandle(
-                LOOKUP.find("JNL_GetLastError").orElseThrow(),
+                LOOKUP.find("DESM_GetLastError").orElseThrow(),
                 FunctionDescriptor.of(ValueLayout.ADDRESS)
             );
             mh_clearLastError = LINKER.downcallHandle(
-                LOOKUP.find("JNL_ClearLastError").orElseThrow(),
+                LOOKUP.find("DESM_ClearLastError").orElseThrow(),
                 FunctionDescriptor.ofVoid()
             );
             mh_setLastError = LINKER.downcallHandle(
-                LOOKUP.find("JNL_SetError").orElseThrow(),
+                LOOKUP.find("DESM_SetError").orElseThrow(),
                 FunctionDescriptor.ofVoid(ValueLayout.ADDRESS)
             );
             final MethodHandle getRegistryMH = LINKER.downcallHandle(
-                LOOKUP.find("JNL_GetRegistry").orElseThrow(),
+                LOOKUP.find("DESM_GetRegistry").orElseThrow(),
                 FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS)
             );
             try (Arena tempArena = Arena.ofConfined()) {
@@ -377,7 +377,7 @@ public class CardGame implements AutoCloseable {
                 MemorySegment _res = (MemorySegment) mh_getPlayerCards_8.invokeExact((MemorySegment)this.ptr);
                 checkError();
                 String _retStr = _res.reinterpret(Long.MAX_VALUE).getString(0);
-                mh_JNL_Free.invokeExact(_res);
+                mh_DESM_Free.invokeExact(_res);
                 return _retStr;
             }
         } catch (RuntimeException e) { throw e; } catch (Throwable e) {
@@ -391,7 +391,7 @@ public class CardGame implements AutoCloseable {
                 MemorySegment _res = (MemorySegment) mh_getDealerCards_9.invokeExact((MemorySegment)this.ptr);
                 checkError();
                 String _retStr = _res.reinterpret(Long.MAX_VALUE).getString(0);
-                mh_JNL_Free.invokeExact(_res);
+                mh_DESM_Free.invokeExact(_res);
                 return _retStr;
             }
         } catch (RuntimeException e) { throw e; } catch (Throwable e) {
@@ -405,7 +405,7 @@ public class CardGame implements AutoCloseable {
                 MemorySegment _res = (MemorySegment) mh_getGameStatus_10.invokeExact((MemorySegment)this.ptr);
                 checkError();
                 String _retStr = _res.reinterpret(Long.MAX_VALUE).getString(0);
-                mh_JNL_Free.invokeExact(_res);
+                mh_DESM_Free.invokeExact(_res);
                 return _retStr;
             }
         } catch (RuntimeException e) { throw e; } catch (Throwable e) {
@@ -477,7 +477,7 @@ public class CardGame implements AutoCloseable {
                 MemorySegment _res = (MemorySegment) mh_drawCard_16.invokeExact((MemorySegment)this.ptr);
                 checkError();
                 String _retStr = _res.reinterpret(Long.MAX_VALUE).getString(0);
-                mh_JNL_Free.invokeExact(_res);
+                mh_DESM_Free.invokeExact(_res);
                 return _retStr;
             }
         } catch (RuntimeException e) { throw e; } catch (Throwable e) {
@@ -515,7 +515,7 @@ public class CardGame implements AutoCloseable {
                 MemorySegment _res = (MemorySegment) mh_joinCards_19.invokeExact((MemorySegment)this.ptr, hand);
                 checkError();
                 String _retStr = _res.reinterpret(Long.MAX_VALUE).getString(0);
-                mh_JNL_Free.invokeExact(_res);
+                mh_DESM_Free.invokeExact(_res);
                 return _retStr;
             }
         } catch (RuntimeException e) { throw e; } catch (Throwable e) {
@@ -529,7 +529,7 @@ public class CardGame implements AutoCloseable {
                 MemorySegment _res = (MemorySegment) mh_get_status.invokeExact((MemorySegment)this.ptr);
                 checkError();
                 String _retStr = _res.reinterpret(Long.MAX_VALUE).getString(0);
-                mh_JNL_Free.invokeExact(_res);
+                mh_DESM_Free.invokeExact(_res);
                 return _retStr;
             }
         } catch (RuntimeException e) { throw e; } catch (Throwable e) {

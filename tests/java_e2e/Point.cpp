@@ -1,5 +1,5 @@
 #pragma once
-#include "JavaNativeLink/Exporter.h"
+#include "Desmos/Exporter.h"
 #include <iostream>
 #include <functional>
 
@@ -37,7 +37,7 @@ struct Point {
     }
 };
 
-JNL_EXPORT_CLASS(Point);
+DESM_EXPORT_CLASS(Point);
 
 struct VirtualBase {
     int dummy = 0;
@@ -53,4 +53,4 @@ struct VirtualBase {
     }
 };
 
-JNL_EXPORT_CLASS(VirtualBase);
+DESM_EXPORT_CLASS(VirtualBase);

@@ -740,7 +740,7 @@ public class Point implements java.lang.AutoCloseable {
         14: putstatic     #195                // Field LOOKUP:Ljava/lang/foreign/SymbolLookup;
         17: getstatic     #178                // Field LINKER:Ljava/lang/foreign/Linker;
         20: getstatic     #195                // Field LOOKUP:Ljava/lang/foreign/SymbolLookup;
-        23: ldc           #199                // String JNL_GetLastError
+        23: ldc           #199                // String DESM_GetLastError
         25: invokeinterface #201,  2          // InterfaceMethod java/lang/foreign/SymbolLookup.find:(Ljava/lang/String;)Ljava/util/Optional;
         30: invokevirtual #205                // Method java/util/Optional.orElseThrow:()Ljava/lang/Object;
         33: checkcast     #30                 // class java/lang/foreign/MemorySegment
@@ -754,7 +754,7 @@ public class Point implements java.lang.AutoCloseable {
         55: putstatic     #17                 // Field mh_getLastError:Ljava/lang/invoke/MethodHandle;
         58: getstatic     #178                // Field LINKER:Ljava/lang/foreign/Linker;
         61: getstatic     #195                // Field LOOKUP:Ljava/lang/foreign/SymbolLookup;
-        64: ldc           #229                // String JNL_ClearLastError
+        64: ldc           #229                // String DESM_ClearLastError
         66: invokeinterface #201,  2          // InterfaceMethod java/lang/foreign/SymbolLookup.find:(Ljava/lang/String;)Ljava/util/Optional;
         71: invokevirtual #205                // Method java/util/Optional.orElseThrow:()Ljava/lang/Object;
         74: checkcast     #30                 // class java/lang/foreign/MemorySegment
@@ -767,7 +767,7 @@ public class Point implements java.lang.AutoCloseable {
         93: putstatic     #49                 // Field mh_clearLastError:Ljava/lang/invoke/MethodHandle;
         96: getstatic     #178                // Field LINKER:Ljava/lang/foreign/Linker;
         99: getstatic     #195                // Field LOOKUP:Ljava/lang/foreign/SymbolLookup;
-       102: ldc           #235                // String JNL_GetRegistry
+       102: ldc           #235                // String DESM_GetRegistry
        104: invokeinterface #201,  2          // InterfaceMethod java/lang/foreign/SymbolLookup.find:(Ljava/lang/String;)Ljava/util/Optional;
        109: invokevirtual #205                // Method java/util/Optional.orElseThrow:()Ljava/lang/Object;
        112: checkcast     #30                 // class java/lang/foreign/MemorySegment

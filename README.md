@@ -1,8 +1,8 @@
-# JavaNativeLink (JNL)
+# Desmos (Desmos)
 
 A C++26 reflection-based library for exposing C++ classes to Java using the Java 22+ Foreign Function & Memory API (FFM). 
 
-JavaNativeLink automatically analyzes your C++ classes and generates the required bridging code in C, alongside the Java glue code to call it safely. It uses `std::meta` (P2996) available in GCC 16 to inspect C++ classes at compile time, eliminating the need for an external AST parser like SWIG.
+Desmos automatically analyzes your C++ classes and generates the required bridging code in C, alongside the Java glue code to call it safely. It uses `std::meta` (P2996) available in GCC 16 to inspect C++ classes at compile time, eliminating the need for an external AST parser like SWIG.
 
 ## Features
 
@@ -59,16 +59,16 @@ cmake -DCMAKE_CXX_COMPILER=g++-16 ..
 
 ## 1. Exposing C++ Classes to Java
 
-To expose a C++ class to Java, simply include `JavaNativeLink/Exporter.h` and use the `JNL_EXPORT_CLASS` macro.
+To expose a C++ class to Java, simply include `Desmos/Exporter.h` and use the `DESM_EXPORT_CLASS` macro.
 
 ### Annotating the C++ Class (`Point.cpp`)
 
 ```cpp
-#include "JavaNativeLink/Exporter.h"
-#include <JavaNativeLink/Annotations.h>
+#include "Desmos/Exporter.h"
+#include <Desmos/Annotations.h>
 #include <string>
 
-struct [[=jnl::export_java{}]] Point {
+struct [[=desm::export_java{}]] Point {
     int x;
     int y;
     std::string name;
@@ -81,7 +81,7 @@ struct [[=jnl::export_java{}]] Point {
 };
 
 // Export the class to Java
-JNL_EXPORT_CLASS(Point);
+DESM_EXPORT_CLASS(Point);
 ```
 
 ### Generating the Java Bindings
@@ -112,15 +112,15 @@ public class Main {
 
 ## 2. Java to C++: Overriding Virtual Methods (Trampolines)
 
-JNL allows Java to cleanly override C++ virtual methods using the "Trampoline" pattern. 
+Desmos allows Java to cleanly override C++ virtual methods using the "Trampoline" pattern. 
 
 ### The C++ Interface (`VirtualBase.cpp`)
 
 ```cpp
-#include "JavaNativeLink/Exporter.h"
+#include "Desmos/Exporter.h"
 #include <iostream>
 
-struct [[=jnl::export_java{}]] VirtualBase {
+struct [[=desm::export_java{}]] VirtualBase {
     virtual ~VirtualBase() = default;
     
     // Virtual method to be overridden in Java
@@ -134,7 +134,7 @@ struct [[=jnl::export_java{}]] VirtualBase {
     }
 };
 
-JNL_EXPORT_CLASS(VirtualBase);
+DESM_EXPORT_CLASS(VirtualBase);
 ```
 
 ### Generating the Trampoline
@@ -183,7 +183,7 @@ public class Main {
 ```
 
 ### Object Retention (`__registry`)
-When a C++ program calls a Java virtual method, it requires the Java Object to still be alive. JavaNativeLink handles this automatically.
+When a C++ program calls a Java virtual method, it requires the Java Object to still be alive. Desmos handles this automatically.
 - Upon calling `enableCallbacks(arena)`, the object registers itself in a static `ConcurrentHashMap` (`__registry`) mapped to its C++ pointer address.
 - This prevents the Java Garbage Collector from destroying the object while C++ holds its pointer.
 - When the C++ object goes out of scope and its destructor is invoked, it fires a `cb_destroy` upcall to Java, which safely removes the object from the `__registry`.
@@ -192,16 +192,16 @@ When a C++ program calls a Java virtual method, it requires the Java Object to s
 
 ## 3. Exception Handling
 
-JNL automatically bridges exceptions across the C++ ↔ Java boundary.
+Desmos automatically bridges exceptions across the C++ ↔ Java boundary.
 
-- **C++ to Java**: If a C++ method throws a `std::runtime_error`, JNL catches it natively and invokes `JNL_SetError()`. Upon returning to Java, the FFM wrapper automatically detects the thread-local error flag and rethrows it as a Java `RuntimeException`.
-- **Java to C++ (Trampolines)**: If a Java overridden virtual method throws a `RuntimeException`, the generated FFM Upcall Stub catches it, prints the stack trace, and invokes `JNL_SetError()`. When execution returns to the C++ Trampoline, it checks the error flag and immediately throws a `std::runtime_error` to seamlessly fail the C++ caller.
+- **C++ to Java**: If a C++ method throws a `std::runtime_error`, Desmos catches it natively and invokes `DESM_SetError()`. Upon returning to Java, the FFM wrapper automatically detects the thread-local error flag and rethrows it as a Java `RuntimeException`.
+- **Java to C++ (Trampolines)**: If a Java overridden virtual method throws a `RuntimeException`, the generated FFM Upcall Stub catches it, prints the stack trace, and invokes `DESM_SetError()`. When execution returns to the C++ Trampoline, it checks the error flag and immediately throws a `std::runtime_error` to seamlessly fail the C++ caller.
 
 ---
 
 ## 4. Examples Provided in the Framework
 
-Inside `tests/java_e2e/`, you will find three distinct E2E integration examples demonstrating JNL's robust capabilities:
+Inside `tests/java_e2e/`, you will find three distinct E2E integration examples demonstrating Desmos's robust capabilities:
 
 1. **`Point.cpp` & `Main.java` (Basic Interactions)**
    - Demonstrates simple C++ struct mapping, instantiation, and explicit `.close()` handling.
@@ -229,7 +229,7 @@ If you prefer to manually trigger the test suite instead of using `build.sh`:
 ./tests/run_tests.sh
 ```
 This script manages the full end-to-end integration test pipeline:
-1. Compiles the local `libJavaNativeLink.dylib`.
+1. Compiles the local `libDesmos.dylib`.
 2. Compiles and executes `Generator_step1.cpp` to create intermediate C++ trampolines.
 3. Compiles and executes `Generator_step2.cpp` to create final Java bridging layers.
 4. Compiles the test native library `libPoint.dylib` containing `Point`, `VirtualBase`, and `PrimitiveTester`.
@@ -240,14 +240,14 @@ This script manages the full end-to-end integration test pipeline:
 
 ## Quick Start (Project Template)
 
-The `template/` directory provides a ready-made skeleton for new JNL-based projects. To start a new project:
+The `template/` directory provides a ready-made skeleton for new Desmos-based projects. To start a new project:
 
 1. Copy the `template/` directory:
    ```bash
    cp -r template/ /path/to/my_project/
    ```
-2. Rename `MyClass.cpp` and update the struct name and `JNL_EXPORT_CLASS()` call
-3. Set `JNL_ROOT` to point to your JavaNativeLink install, then run:
+2. Rename `MyClass.cpp` and update the struct name and `DESM_EXPORT_CLASS()` call
+3. Set `DESM_ROOT` to point to your Desmos install, then run:
    ```bash
    ./build.sh          # Linux/macOS
    build.bat            # Windows (MSYS2)
@@ -273,7 +273,7 @@ cmake --build . --target run_Sorter
 
 ### 2. Blackjack Card Game
 
-A complete Blackjack game demonstrating a Java Swing GUI frontend powered by a C++ game engine backend via JNL.
+A complete Blackjack game demonstrating a Java Swing GUI frontend powered by a C++ game engine backend via Desmos.
 
 - **C++ Backend** (`examples/cardgame/CardGame.cpp`): Implements deck management, shuffling, dealing, hand scoring with ace adjustment, hit/stand logic, and win/loss tracking.
 - **Java Frontend** (`examples/cardgame/CardGameUI.java`): A Swing application that renders card images, provides Hit/Stand/New Game buttons, and displays scores and game status — all by calling into the native `CardGame` class.
@@ -290,4 +290,4 @@ cmake --build . --target run_CardGame
 
 - **TypeMapper (`Exporter.h`)**: A template trait that converts between Java FFM C-ABI types (`NativeType`) and native C++ types. Handles pointer indirection, unsigned-to-signed extensions, and `std::function` wrapping automatically.
 - **JavaGenerator (`JavaGenerator.h`)**: Uses C++26 reflection over `std::meta::members_of` to iterate over all exported constructors, methods, and public fields, and maps them to `MethodHandle` calls in the generated Java file.
-- **JNLClassRegistry**: A C-compatible struct that the `JNL_EXPORT_CLASS` macro uses to register method wrappers to a global registry, making them discoverable from Java at runtime without name-mangling complexities.
+- **DesmClassRegistry**: A C-compatible struct that the `DESM_EXPORT_CLASS` macro uses to register method wrappers to a global registry, making them discoverable from Java at runtime without name-mangling complexities.

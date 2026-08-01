@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-# build.sh - Build the JavaNativeLink framework library
+# build.sh - Build the Desmos framework library
 
-echo "Building JavaNativeLink on WSL/macOS..."
+echo "Building Desmos on WSL/macOS..."
 
 # Ensure JAVA_HOME is set
 if [ -z "$JAVA_HOME" ]; then

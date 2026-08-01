@@ -1,6 +1,6 @@
 #include <iostream>
 #include <dlfcn.h>
-#include "JavaNativeLink/Exporter.h"
+#include "Desmos/Exporter.h"
 #include <string>
 
 struct Point {
@@ -24,15 +24,15 @@ int main() {
         return 1;
     }
     
-    typedef const JNLClassRegistry* (*GetRegFunc)(const char*);
-    GetRegFunc func = (GetRegFunc)dlsym(handle, "JNL_GetRegistry_Special");
+    typedef const DesmClassRegistry* (*GetRegFunc)(const char*);
+    GetRegFunc func = (GetRegFunc)dlsym(handle, "DESM_GetRegistry_Special");
     if (!func) {
         std::cerr << "dlsym failed: " << dlerror() << "\n";
         return 1;
     }
-    std::cout << "dlsym JNL_GetRegistry address: " << (void*)func << "\n";
+    std::cout << "dlsym DESM_GetRegistry address: " << (void*)func << "\n";
     
-    const JNLClassRegistry* reg = func("Point");
+    const DesmClassRegistry* reg = func("Point");
     if (reg) {
         std::cout << "Found Point registry: " << reg->num_fields << " fields\n";
     } else {

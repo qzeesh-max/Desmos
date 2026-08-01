@@ -16,7 +16,7 @@ if "%UseMSVC%"=="0" if "%UseMSYS2%"=="0" (
     set "UseMSYS2=1"
 )
 
-echo Building JavaNativeLink on Windows...
+echo Building Desmos on Windows...
 
 if "%UseMSVC%"=="1" (
     echo Using Microsoft Visual Studio...
@@ -49,14 +49,14 @@ if "%UseMSYS2%"=="1" (
     echo Building Java E2E...
     cd tests\java_e2e
     
-    g++ -std=c++26 -freflection Generator.cpp -o Generator.exe -I..\..\include -L..\..\build -lJavaNativeLink
+    g++ -std=c++26 -freflection Generator.cpp -o Generator.exe -I..\..\include -L..\..\build -lDesmos
     if errorlevel 1 exit /b %errorlevel%
     
     set "PATH=%CD%\..\..\build;%PATH%"
     .\Generator.exe
     if errorlevel 1 exit /b %errorlevel%
     
-    g++ -std=c++26 -freflection -fPIC -shared Point.cpp -o Point.dll -I..\..\include -L..\..\build -lJavaNativeLink
+    g++ -std=c++26 -freflection -fPIC -shared Point.cpp -o Point.dll -I..\..\include -L..\..\build -lDesmos
     if errorlevel 1 exit /b %errorlevel%
     
     javac Point.java Main.java

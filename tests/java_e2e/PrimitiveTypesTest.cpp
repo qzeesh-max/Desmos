@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <iostream>
-#include "JavaNativeLink/Exporter.h"
+#include "Desmos/Exporter.h"
 
 class PrimitiveTester {
 public:
@@ -28,4 +28,4 @@ public:
     virtual char testChar(char v) { return v + 1; }
 };
 
-JNL_EXPORT_CLASS(PrimitiveTester);
+DESM_EXPORT_CLASS(PrimitiveTester);
