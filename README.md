@@ -301,7 +301,7 @@ To build and run:
 mkdir build && cd build
 cmake -DCMAKE_CXX_COMPILER=g++-16 ..
 cmake --build .
-cmake --build . --target run_Polyglot
+cmake --build . --target run_PolyglotRapids
 ```
 
 ### 4. WebAssembly / TeaVM Port
