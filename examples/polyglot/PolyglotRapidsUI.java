@@ -192,6 +192,17 @@ public class PolyglotRapidsUI extends JFrame {
             JToggleButton cb = new JToggleButton(name);
             cb.setOpaque(true); // Needed for Mac to show background color
             cb.setFont(new Font("SansSerif", Font.BOLD, 16));
+            cb.setBackground(Color.WHITE);
+            cb.setForeground(Color.BLACK);
+            cb.addItemListener(e -> {
+                if (cb.isSelected()) {
+                    cb.setBackground(new Color(0, 122, 255));
+                    cb.setForeground(Color.WHITE);
+                } else {
+                    cb.setBackground(Color.WHITE);
+                    cb.setForeground(Color.BLACK);
+                }
+            });
             if (code.equals("en")) cb.setSelected(true);
             
             langCheckboxes.put(code, cb);
