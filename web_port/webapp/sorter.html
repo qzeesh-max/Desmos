@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sorting Visualizer</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: sans-serif; margin: 0; padding: 0; background: white; }
+        button { font-size: 16px; padding: 10px 20px; margin-right: 10px; cursor: pointer; border: none; border-radius: 4px; color: white; background: #17a2b8; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        button:hover:not(:disabled) { background: #117a8b; }
+        #sorting-container { padding: 10px; }
+    </style>
+</head>
+<body>
+    <div id="sorting-container">Loading Sorting Engine...</div>
+    <script src="assets/sorter.js"></script>
+    <script>
+        createSorterModule().then(Module => {
+            window.sorterModule = Module;
+            window.sorterInstance = new Module.Sorter(200);
+            console.log("Sorter Module Loaded.");
+            
+            // Load TeaVM UI
+            let script = document.createElement("script");
+            script.src = "assets/sorting/app.js";
+            script.onload = () => {
+                console.log("Sorting TeaVM script loaded.");
+                main(); // Invoke TeaVM entry point
+            };
+            document.body.appendChild(script);
+        }).catch(err => {
+            console.error(err);
+            document.getElementById("sorting-container").innerHTML = "Failed to load WASM module.";
+        });
+    </script>
+</body>
+</html>
